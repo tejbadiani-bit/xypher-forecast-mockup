@@ -63,14 +63,14 @@ main{max-width:1320px;margin:0 auto;padding:22px 20px 80px}
 .badge.warn{background:#fff3dc;color:var(--warn)}
 .dot{width:7px;height:7px;border-radius:50%;background:currentColor}
 .grid{display:grid;gap:14px}.grid>*{min-width:0}
-.kpis{grid-template-columns:repeat(auto-fit,minmax(160px,1fr))}
+.kpis{grid-template-columns:repeat(auto-fit,minmax(142px,1fr))}
 .card{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:18px}
 .card.dark{background:var(--ink);color:#e9eaec;border-color:var(--ink)}
 .card.dark h2,.card.dark h3{color:#fff}
 .card h2{margin-bottom:4px}
 .card .sub{color:var(--muted);font-size:13px;margin-bottom:14px}
 .kpi .l{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
-.kpi .v{font-size:26px;font-weight:700;color:var(--head);margin-top:4px;font-variant-numeric:tabular-nums}
+.kpi .v{font-size:24px;font-weight:700;color:var(--head);margin-top:4px;font-variant-numeric:tabular-nums}
 .kpi .d{font-size:12.5px;margin-top:2px;color:var(--muted)}
 .kpi.hl{background:var(--ink);border-color:var(--ink)}
 .kpi.hl .l{color:#b9bcc2}.kpi.hl .v{color:var(--lime)}.kpi.hl .d{color:#cfd1d5}
@@ -159,12 +159,12 @@ svg text{font-family:"Instrument Sans",system-ui,sans-serif}
   <nav class="nav" id="nav"></nav>
   <div class="ctrls">
     <select class="pill" id="weekSel" aria-label="Forecast week"></select>
-    <div class="seg" id="measureSeg"><button data-m="gp" class="on">GP in Year</button><button data-m="rev">Revenue</button></div>
+    <div class="seg" id="measureSeg"><button data-m="rev" class="on">Revenue in Year</button><button data-m="gp">GP in Year</button></div>
     <span id="statusBadge"></span>
     <button class="btn dark" id="lockBtn">Lock &amp; snapshot</button>
   </div>
 </div></header>
-<div class="banner">Concept mock-up of a Salesforce LWC · <b>fictional accounts and figures</b> · names abbreviated · built on the new commercial structure · design ref XYP-FCST-001</div>
+<div class="banner">Concept mock-up of a Salesforce LWC · <b>fictional accounts and figures</b> · names abbreviated · revenue = first 12 months of contract value · built on the new commercial structure · design ref XYP-FCST-001</div>
 <main id="app"></main>
 <div id="modalHost"></div>
 <div id="toast"></div>
@@ -216,9 +216,12 @@ function mk(u,rep,closed){
   const gp=Math.round((p==='AM'?ri(3,24):p==='BD'?ri(3,20):ri(5,30))*1000/50)*50+ri(0,19)*50;
   const margin=0.32+rnd()*0.36;
   const type=p==='AM'?(rnd()<.62?'Renewal':'Expansion'):'New Business';
-  const st={exists:true,stage:'',cat:'',mgr:'',close:'',gp,rev:Math.round(gp/margin/100)*100};
-  const d={id:'OPP-'+(24000+id++),unit:u.key,pillar:p,owner:rep,acct:acct(),product:pick(PROD),type,partner:p==='CA'?pick(PARTNERS):(rnd()<.08?pick(PARTNERS):''),next:pick(NEXT),note:'',margin,cur:st,prior:null};
-  if(closed){st.gp=Math.round(st.gp*.85/50)*50;st.rev=Math.round(st.gp/margin/100)*100;st.stage='Closed Won';st.close=randDate('2026-11-03','2026-12-03');}
+  const product=pick(PROD),rec=/MDR|Vulnerability|Retainer|Phishing|vCISO/.test(product);
+  const term=rec?pick(type==='New Business'?[12,24,36]:[12,24,36,36]):12;
+  const rev=Math.round(gp/margin/100)*100;
+  const st={exists:true,stage:'',cat:'',mgr:'',close:'',gp,rev,tcv:Math.round(rev*term/12/100)*100};
+  const d={id:'OPP-'+(24000+id++),unit:u.key,pillar:p,owner:rep,acct:acct(),product,term,basis:rnd()<.3?'Quote':'Estimated',type,partner:p==='CA'?pick(PARTNERS):(rnd()<.08?pick(PARTNERS):''),next:pick(NEXT),note:'',margin,cur:st,prior:null};
+  if(closed){st.gp=Math.round(st.gp*.85/50)*50;st.rev=Math.round(st.gp/margin/100)*100;st.tcv=Math.round(st.rev*term/12/100)*100;st.stage='Closed Won';st.close=randDate('2026-11-03','2026-12-03');}
   else{
     st.stage=STAGES[pick([0,1,1,2,2,3,3,3])];
     const r=rnd();
@@ -241,7 +244,7 @@ DEALS.forEach(d=>{
   else if(r<.20&&idx<=2){p.stage=STAGES[idx+1]}
   else if(r<.225){p.close=randDate('2026-12-14','2027-01-25');c.close=randDate('2027-02-03','2027-03-20');if(idx<2){c.stage=p.stage=STAGES[2]}}
   else if(r<.255){c.close=randDate('2026-12-15','2027-01-28');p.close=randDate('2027-02-05','2027-03-15')}
-  else if(r<.315){p.gp=Math.round(c.gp*(rnd()<.5?0.72+rnd()*.15:1.15+rnd()*.3)/50)*50;p.rev=Math.round(p.gp/d.margin/100)*100}
+  else if(r<.315){p.gp=Math.round(c.gp*(rnd()<.5?0.72+rnd()*.15:1.15+rnd()*.3)/50)*50;p.rev=Math.round(p.gp/d.margin/100)*100;p.tcv=Math.round(p.rev*d.term/12/100)*100}
   else if(r<.375){p.stage=STAGES[3];c.stage='Closed Won';if(c.close>Q.end||c.close<'2026-12-05')p.close=randDate('2026-12-14','2026-12-31');c.close=randDate('2026-12-07','2026-12-10')}
   else if(r<.39){p.stage=STAGES[pick([2,3])];c.stage='Closed Lost';if(c.close>Q.end)p.close=randDate('2026-12-14','2027-01-20');c.close='2026-12-09'}
 });
@@ -255,7 +258,7 @@ DEALS.forEach(d=>{
 });
 
 /* ---------- state + maths ---------- */
-const S={view:'cockpit',unit:'am-st',measure:'gp',week:6,locked:false,lockedAt:null,filter:'quarter',scope:'ALL',moveFilter:null,trendScope:'ALL'};
+const S={view:'cockpit',unit:'am-st',measure:'rev',week:6,locked:false,lockedAt:null,filter:'quarter',scope:'ALL',moveFilter:null,trendScope:'ALL'};
 const live=()=>S.week===6;
 const editable=()=>live()&&!S.locked;
 const W=()=>live()?'cur':'prior';
@@ -265,7 +268,7 @@ const mconv=x=>S.measure==='gp'?x:Math.round(x/0.45/100)*100;
 const inCall=st=>st.exists&&inQ(st)&&(st.mgr==='Commit'||st.mgr==='Closed');
 function totals(keys,which){
   which=which||W();
-  const t={target:0,closed:0,commit:0,bc:0,pipe:0,repCommit:0,adj:0,lines:0};
+  const t={target:0,closed:0,commit:0,bc:0,pipe:0,repCommit:0,adj:0,lines:0,book:0,callRev:0,callQ:0};
   keys.forEach(k=>{const u=UNIT[k];u.reps.forEach(r=>t.target+=mconv(REPS[r].target));t.adj+=mconv(which==='cur'?u.adj.cur:u.adj.prior)});
   DEALS.forEach(d=>{
     if(!keys.includes(d.unit))return;const st=d[which];if(!st.exists)return;
@@ -273,9 +276,10 @@ function totals(keys,which){
     if(!inQ(st))return;const x=v(st);
     if(st.mgr==='Closed')t.closed+=x;else if(st.mgr==='Commit')t.commit+=x;else if(st.mgr==='Best Case')t.bc+=x;else if(st.mgr==='Pipeline')t.pipe+=x;
     if(st.cat==='Commit')t.repCommit+=x;
+    if(st.mgr==='Commit'||st.mgr==='Closed'){t.book+=st.tcv;t.callRev+=st.rev;if(d.basis==='Quote')t.callQ+=st.rev}
   });
   t.call=t.closed+t.commit+t.adj;t.repCall=t.closed+t.repCommit;t.gap=t.target-t.call;
-  t.cov=(t.commit+t.bc+t.pipe)/Math.max(1,t.target-t.closed);t.pct=t.call/Math.max(1,t.target);
+  t.cov=(t.commit+t.bc+t.pipe)/Math.max(1,t.target-t.closed);t.pct=t.call/Math.max(1,t.target);t.qb=t.callQ/Math.max(1,t.callRev);
   return t;
 }
 const ALLK=UNITS.map(u=>u.key);
@@ -323,7 +327,7 @@ const dcls=x=>x>0?'pos':x<0?'neg':'muted';
 const pct=x=>Math.round(x*100)+'%';
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const catCls=c=>c.split(' ')[0];
-const mLabel=()=>S.measure==='gp'?'GP in Year':'Revenue';
+const mLabel=()=>S.measure==='gp'?'GP in Year':'Revenue in Year';
 
 /* ---------- header ---------- */
 const VIEWS=[['cockpit','CCO roll-up'],['unit','Pillar & team'],['variance','Week-on-week variance'],['trend','Trend & accuracy'],['rhythm','Friday rhythm'],['build','How it’s built']];
@@ -372,9 +376,11 @@ function viewCockpit(){
     ${kpi('Gap to target',money(t.gap),pct(t.pct)+' of target called')}
     ${kpi('Best Case upside',money(t.bc),'not in the call')}
     ${kpi('Coverage of remaining',t.cov.toFixed(1)+'×','Commit + BC + Pipeline ÷ (target − closed)')}
+    ${kpi('Bookings (TCV) in call',money(t.book),'today\'s measure · '+(t.book/Math.max(1,t.callRev)).toFixed(1)+'× in-year revenue')}
+    ${kpi('Quote-backed',pct(t.qb),'of the call\'s revenue comes from Pricing Desk lines')}
   </div>
   <div class="card" style="margin-top:14px"><h2>Pillar roll-up</h2><div class="sub">Δ is this Friday's call against last Friday's locked snapshot. Rep call uses the rep's own forecast category; the manager call uses the manager's judgement.</div>
-  <div class="scroll"><table><thead><tr><th>Pillar</th><th class="r">Target</th><th class="r">Closed</th><th class="r">Commit</th><th class="r">Adj.</th><th class="r">Manager call</th><th class="r">Δ vs LW</th><th>% of target</th><th class="r">Rep call</th><th class="r">Best Case</th><th class="r">Pipeline</th><th class="r">Coverage</th><th>Submission</th></tr></thead>
+  <div class="scroll"><table><thead><tr><th>Pillar</th><th class="r">Target</th><th class="r">Closed</th><th class="r">Commit</th><th class="r">Adj.</th><th class="r">Manager call</th><th class="r">Δ vs LW</th><th>% of target</th><th class="r">Rep call</th><th class="r">Best Case</th><th class="r">Pipeline</th><th class="r">Coverage</th><th class="r">Quote-backed</th><th>Submission</th></tr></thead>
   <tbody>${rows}<tr class="tot"><td>Total DXR</td>${cells(t,td)}<td></td></tr></tbody></table></div></div>
   <div class="grid two" style="margin-top:14px">
     <div class="card"><h2>Target vs call</h2><div class="sub">Closed + Commit (+ adjustment) is the call. Best Case shows the upside on top.</div>${barsSvg()}
@@ -387,7 +393,7 @@ function viewCockpit(){
 function cells(t,d){
   return`<td class="r num">${money(t.target)}</td><td class="r num">${money(t.closed)}</td><td class="r num">${money(t.commit)}</td><td class="r num ${t.adj?'':'dim'}">${t.adj?sgn(t.adj):'–'}</td><td class="r num"><b>${money(t.call)}</b></td>
   <td class="r num ${d==null?'dim':dcls(d)}">${d==null?'–':sgn(d)}</td><td><div style="display:flex;align-items:center;gap:8px"><div class="bar" style="flex:1"><i style="width:${Math.min(100,t.pct*100)}%;background:${t.pct>=.9?'var(--accent)':t.pct>=.7?'var(--warn)':'var(--bad)'}"></i></div><span class="num" style="font-size:12px">${pct(t.pct)}</span></div></td>
-  <td class="r num muted">${money(t.repCall)}</td><td class="r num">${money(t.bc)}</td><td class="r num">${money(t.pipe)}</td><td class="r num">${t.cov.toFixed(1)}×</td>`;
+  <td class="r num muted">${money(t.repCall)}</td><td class="r num">${money(t.bc)}</td><td class="r num">${money(t.pipe)}</td><td class="r num">${t.cov.toFixed(1)}×</td><td class="r num ${t.qb<.5?'neg':''}">${pct(t.qb)}</td>`;
 }
 function barsSvg(){
   const rows=Object.entries(PILLARS).map(([k,P])=>({n:P.name,t:totals(P.units)}));
@@ -428,6 +434,7 @@ function viewUnit(){
     <td>${ch&&p.stage!==s.stage?`<span class="was">${SHORT[p.stage]}</span>`:''}${SHORT[s.stage]}</td>
     <td class="num">${ch&&p.close!==s.close?`<span class="was">${fmtDate(p.close)}</span>`:''}${fmtDate(s.close)}</td>
     <td class="r num">${ch&&v(p)!==v(s)?`<span class="was">${money(v(p))}</span>`:''}<b>${money(v(s))}</b></td>
+    <td class="r num">${money(s.tcv)}<span class="dim" style="display:block;font-size:11.5px">${x.term} mo · <span class="tag ${x.basis==='Quote'?'t-up':'t-due'}" style="margin:0">${x.basis==='Quote'?'Quote':'Est.'}</span></span></td>
     <td><span class="cat ${catCls(s.cat)}">${s.cat}</span></td><td>${mgrCell}</td><td>${tags(x).map(([c,l])=>`<span class="tag t-${c}">${l}</span>`).join('')}</td>
     <td>${ed?`<input class="note" data-note="${x.id}" value="${esc(x.note)}" placeholder="Manager note…">`:`<span class="muted" style="font-size:12.5px">${esc(x.note)||'–'}</span>`}<div class="dim" style="font-size:11.5px;margin-top:2px">Next: ${esc(x.next)}</div></td></tr>`}).join('');
   const adjV=mconv(u.adj.cur);
@@ -438,7 +445,7 @@ function viewUnit(){
   <div class="grid kpis">
     ${kpi('Target',money(t.target))}${kpi('Closed',money(t.closed))}${kpi('Commit (manager)',money(t.commit),'rep says '+money(t.repCommit))}
     ${kpi('Manager call',money(t.call),d==null?'':`<span class="${dcls(d)}">${sgn(d)}</span> vs last Friday`,true)}
-    ${kpi('Gap',money(t.gap),pct(t.pct)+' of target')}${kpi('Coverage',t.cov.toFixed(1)+'×','Best Case '+money(t.bc))}
+    ${kpi('Gap',money(t.gap),pct(t.pct)+' of target')}${kpi('Coverage',t.cov.toFixed(1)+'×','Best Case '+money(t.bc))}${kpi('Bookings (TCV) in call',money(t.book),pct(t.qb)+' quote-backed')}
   </div>
   <div class="grid two" style="margin-top:14px">
     <div class="card"><h2>Team</h2><div class="sub">Quarter to date in ${mLabel()}. A rep's call uses the manager categories.</div>
@@ -453,7 +460,7 @@ function viewUnit(){
   </div>
   <div class="card" style="margin-top:14px"><h2>Deals</h2><div class="sub">${ed?'Change the <b>manager category</b> and the totals, the roll-up and the bridge update live. Struck-through values are last Friday\'s snapshot.':'Read-only snapshot.'}</div>
     <div class="chips">${Object.entries(F).map(([k,[l,fn]])=>`<button class="chip ${S.filter===k?'on':''}" data-filter="${k}">${l}<span class="n">${all.filter(fn).length}</span></button>`).join('')}</div>
-    <div class="scroll"><table><thead><tr><th>Deal</th><th>Owner</th><th>Stage</th><th>Close</th><th class="r">${mLabel()}</th><th>Rep cat.</th><th>Manager cat.</th><th>Movement</th><th>Note / next step</th></tr></thead><tbody>${rowsD||'<tr><td colspan="9" class="muted">No deals match this filter.</td></tr>'}</tbody></table></div>
+    <div class="scroll"><table><thead><tr><th>Deal</th><th>Owner</th><th>Stage</th><th>Close</th><th class="r">${mLabel()}</th><th class="r">Bookings (TCV)</th><th>Rep cat.</th><th>Manager cat.</th><th>Movement</th><th>Note / next step</th></tr></thead><tbody>${rowsD||'<tr><td colspan="10" class="muted">No deals match this filter.</td></tr>'}</tbody></table></div>
   </div>`;
 }
 
@@ -561,9 +568,9 @@ function viewRhythm(){
    <div class="card dark"><h2>What a snapshot stores</h2><ul class="tight" style="color:#cfd1d5;font-size:13.5px">
     <li><b style="color:#fff">1 Forecast_Week__c</b>: status Locked, who and when, Manual or Auto</li>
     <li><b style="color:#fff">4 Forecast_Submission__c</b>: target, closed, commit, best case, pipeline, adjustment, call, prior call, commentary</li>
-    <li><b style="color:#fff">${t.lines} Forecast_Line__c</b>: per deal: stage, rep category, manager category, close date, GP and revenue, next step, note, prior values, movement, call variance</li>
+    <li><b style="color:#fff">${t.lines} Forecast_Line__c</b>: per deal: stage, rep category, manager category, close date, revenue in year, bookings, GP, next step, note, prior values, movement, call variance</li>
     <li>The owner's <b style="color:#fff">pillar is stamped</b>, so a later re-org never rewrites history</li>
-    <li>Both measures are stored, so the GP / Revenue toggle works on history too</li></ul></div>
+    <li>Revenue in Year, Bookings (TCV) and GP are all stored, plus whether each line is quote-backed or estimated</li></ul></div>
   </div>`;
 }
 
@@ -588,13 +595,19 @@ function viewBuild(){
      <li><b>Apex</b>: <code>ForecastController</code>, <code>ForecastSyncService</code>, <code>ForecastLockService</code> (Queueable), <code>ForecastMovement</code>, auto-lock (Fri 18:00) + nightly sync schedulers</li>
      <li><b>Security</b>: <code>DXR_Forecast_Manager</code>, <code>DXR_Forecast_Admin</code> (+ unlock custom permission). VRs block edits once locked.</li>
      <li><b>Reports</b>: call trend, variance by movement, slipped deals, judgement delta, accuracy · <b>DXR Weekly Forecast</b> dashboard</li></ul></div>
-    <div class="card"><h2>Open decisions for DXR</h2><ol class="tight" style="font-size:13.5px">
-     <li>Pillar by <b>deal owner</b> (recommended, no double count) or by deal source?</li>
-     <li>Primary measure: <b>GP in Year</b> (matches targets) or Revenue?</li>
-     <li>Who can lock: CCO only, or CCO + RevOps? Is 18:00 right for the auto-lock?</li>
-     <li>Go-live date of the new commercial structure, and the final roster</li>
-     <li>Can managers see each other's units before the meeting?</li>
-     <li>Renewals in the forecast (627 of 827 open DXR deals) or in a separate view?</li></ol></div>
+    <div class="card"><h2>Revenue in Year, from the pricing tool</h2><div class="sub">The call measure. Bookings (TCV = Amount) is what DXR reports today, and it stays visible as a column.</div>
+     <ul class="tight" style="font-size:13.5px"><li>Every Pricing Desk line has a <b>Revenue Class</b>, a <b>start month</b> and a <b>line months</b> value. The new <code>In_Year_Revenue__c</code> on each line counts months 1–12 of a recurring line, plus any one-off or repeatable line that starts in year 1. It is the same rule as <code>In_Year_GP__c</code>, applied to price.</li>
+     <li>QuoteSyncService sums it to <code>Quote_In_Year_Revenue__c</code> on the opp.</li>
+     <li><code>Reporting_Revenue_In_Year__c</code> = the quote value, else <b>Amount × 12 ÷ term</b> (shown as <b>Est.</b>).</li>
+     <li>Example: 3-yr MDR at £30k/yr + £6k onboarding gives Bookings <b>£96k</b>, Revenue in Year <b>£36k</b> and an estimate of £32k.</li>
+     <li>Why it matters: 183 of 827 open DXR deals are multi-year. They hold £27.4m of the £33.1m open bookings.</li></ul></div>
+    <div class="card"><h2>Decisions</h2><ol class="tight" style="font-size:13.5px">
+     <li>✅ Pillar = <b>deal owner</b></li>
+     <li>✅ Primary measure = <b>Revenue</b> (in year). <b>Still to confirm:</b> are the revenue targets in-year or bookings?</li>
+     <li>✅ Built on the new commercial structure. DXR to supply the go-live date and the roster.</li>
+     <li>✅ Renewals stay in the forecast, with a Type filter</li>
+     <li>Open: who can lock (CCO only, or + RevOps), and is the 18:00 auto-lock right?</li>
+     <li>Open: can managers see other units before the meeting?</li></ol></div>
    </div>
   </div>`;
 }
