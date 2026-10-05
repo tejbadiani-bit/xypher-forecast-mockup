@@ -1,0 +1,650 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DXR Forecast — concept mock-up</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --lime:#a6ff33;--cyan:#00ffff;--ink:#1d1d1b;--text:#2b303a;--head:#1d1d1b;--muted:#5d626c;--dim:#8a8e96;
+  --accent:#3b7a00;--cyan-t:#00808a;--cyan-f:#9ff3f3;
+  --bg:#ffffff;--s1:rgba(43,48,58,.045);--s2:rgba(43,48,58,.07);--s3:rgba(43,48,58,.11);
+  --line:rgba(43,48,58,.12);--line2:rgba(43,48,58,.22);
+  --warn:#b7791f;--bad:#c93c3c;--ok:#2f8f2f;--r:22px;--r2:12px;
+  --inset:rgba(0,0,0,.03) 1px 1px 0 0 inset;--shadow:0 18px 50px rgba(29,29,27,.16);
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:"Instrument Sans",system-ui,sans-serif;font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+h1,h2,h3,h4{margin:0;color:var(--head);letter-spacing:-.015em}
+h1{font-size:30px;line-height:1.12;font-weight:700}
+h2{font-size:20px;font-weight:700}
+h3{font-size:15px;font-weight:600}
+.num{font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)}.dim{color:var(--dim)}
+.pos{color:var(--ok)}.neg{color:var(--bad)}
+a{color:var(--cyan-t)}
+
+/* shell */
+.top{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.94);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.top-in{max-width:1320px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:12px;font-weight:700;color:var(--head);white-space:nowrap}
+.mark{width:30px;height:30px;border-radius:9px;background:var(--ink);position:relative;overflow:hidden}
+.mark:before{content:"";position:absolute;inset:8px -4px auto auto;width:26px;height:8px;background:var(--lime);transform:skewX(-24deg)}
+.mark:after{content:"";position:absolute;left:-4px;bottom:7px;width:22px;height:6px;background:var(--cyan);transform:skewX(-24deg)}
+.brand .tag{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:600;border-left:1px solid var(--line2);padding-left:12px}
+.nav{display:flex;gap:2px;background:rgba(43,48,58,.035);box-shadow:var(--inset);border-radius:999px;padding:4px;overflow-x:auto;scrollbar-width:none;max-width:100%}
+.nav button{border:0;background:none;padding:8px 14px;border-radius:999px;font-weight:600;font-size:13.5px;cursor:pointer;white-space:nowrap}
+.nav button:hover{background:var(--s2)}
+.nav button.on{background:var(--ink);color:#fff}
+.ctrls{display:flex;align-items:center;gap:10px;margin-left:auto;flex-wrap:wrap}
+.seg{display:flex;background:rgba(43,48,58,.035);box-shadow:var(--inset);border-radius:999px;padding:3px}
+.seg button{border:0;background:none;padding:6px 12px;border-radius:999px;font-weight:600;font-size:13px;cursor:pointer;white-space:nowrap}
+.seg button.on{background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.12)}
+select.pill{background:#fff;border:1.5px solid var(--line2);border-radius:999px;padding:6px 30px 6px 12px;font-weight:600;font-size:13px;appearance:none;cursor:pointer;
+  background-image:linear-gradient(45deg,transparent 50%,var(--text) 50%),linear-gradient(135deg,var(--text) 50%,transparent 50%);background-position:calc(100% - 16px) 52%,calc(100% - 11px) 52%;background-size:5px 5px;background-repeat:no-repeat}
+.btn{border:0;border-radius:999px;padding:9px 16px;font-weight:700;font-size:13.5px;cursor:pointer;white-space:nowrap}
+.btn.dark{background:var(--ink);color:#fff}
+.btn.lime{background:var(--lime);color:var(--ink)}
+.btn.ghost{background:var(--s2);color:var(--text)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.banner{background:var(--ink);color:#e9eaec;font-size:12.5px;text-align:center;padding:6px 16px}
+.banner b{color:var(--lime)}
+main{max-width:1320px;margin:0 auto;padding:22px 20px 80px}
+
+/* building blocks */
+.hero{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:18px}
+.hero p{margin:6px 0 0;color:var(--muted);max-width:760px}
+.badge{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;padding:4px 10px;border-radius:999px;background:var(--s2);white-space:nowrap}
+.badge.open{background:#eaffd2;color:var(--accent)}
+.badge.locked{background:var(--ink);color:#fff}
+.badge.warn{background:#fff3dc;color:var(--warn)}
+.dot{width:7px;height:7px;border-radius:50%;background:currentColor}
+.grid{display:grid;gap:14px}.grid>*{min-width:0}
+.kpis{grid-template-columns:repeat(auto-fit,minmax(160px,1fr))}
+.card{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:18px}
+.card.dark{background:var(--ink);color:#e9eaec;border-color:var(--ink)}
+.card.dark h2,.card.dark h3{color:#fff}
+.card h2{margin-bottom:4px}
+.card .sub{color:var(--muted);font-size:13px;margin-bottom:14px}
+.kpi .l{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.kpi .v{font-size:26px;font-weight:700;color:var(--head);margin-top:4px;font-variant-numeric:tabular-nums}
+.kpi .d{font-size:12.5px;margin-top:2px;color:var(--muted)}
+.kpi.hl{background:var(--ink);border-color:var(--ink)}
+.kpi.hl .l{color:#b9bcc2}.kpi.hl .v{color:var(--lime)}.kpi.hl .d{color:#cfd1d5}
+.two{grid-template-columns:1.35fr 1fr}
+.half{grid-template-columns:1fr 1fr}
+@media (max-width:980px){.two,.half{grid-template-columns:1fr}}
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th{font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:600;text-align:left;padding:8px 10px;border-bottom:1.5px solid var(--line2);white-space:nowrap}
+td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
+td.r,th.r{text-align:right}
+tr.tot td{font-weight:700;border-top:1.5px solid var(--line2);background:var(--s1)}
+tr.click{cursor:pointer}
+tr.click:hover td{background:var(--s1)}
+tr.sub td{font-size:13px;color:var(--muted)}
+tr.sub td:first-child{padding-left:28px}
+.bar{height:8px;border-radius:5px;background:var(--s2);overflow:hidden;min-width:70px}
+.bar i{display:block;height:100%;background:var(--accent)}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.chip{border:1.5px solid var(--line2);background:#fff;border-radius:999px;padding:5px 12px;font-size:13px;font-weight:600;cursor:pointer}
+.chip.on{background:var(--ink);border-color:var(--ink);color:#fff}
+.chip .n{opacity:.6;margin-left:4px}
+.tag{display:inline-block;font-size:11px;font-weight:700;padding:2px 7px;border-radius:6px;margin:1px 3px 1px 0;white-space:nowrap}
+.t-new{background:#e6f7ff;color:#0a6b8a}.t-won{background:#e3f6e3;color:var(--ok)}.t-lost{background:#fde8e8;color:var(--bad)}
+.t-push{background:#fde8e8;color:var(--bad)}.t-pull{background:#eaffd2;color:var(--accent)}.t-up{background:#eaffd2;color:var(--accent)}
+.t-down{background:#fff3dc;color:var(--warn)}.t-amt{background:var(--s2);color:var(--text)}.t-ovr{background:var(--ink);color:var(--lime)}
+.t-due{background:#fff3dc;color:var(--warn)}
+.deal b{display:block;color:var(--head);font-weight:600}
+.deal span{font-size:12px;color:var(--muted)}
+.was{display:block;font-size:11.5px;color:var(--dim);text-decoration:line-through}
+td select{border:1.5px solid var(--line2);border-radius:8px;padding:4px 6px;background:#fff;font-size:13px;font-weight:600}
+td select.ovr{border-color:var(--ink);background:#f6ffe9}
+td input.note{border:1px solid var(--line);border-radius:8px;padding:5px 8px;width:100%;min-width:170px;font-size:12.5px}
+.cat{font-weight:600;font-size:12.5px;white-space:nowrap}
+.cat.Commit{color:var(--accent)}.cat.Best{color:var(--cyan-t)}.cat.Closed{color:var(--ink)}.cat.Omitted,.cat.Omit{color:var(--dim)}
+label.f{display:block;font-size:12px;font-weight:600;color:var(--muted);margin:10px 0 4px}
+.inp,textarea{width:100%;border:1.5px solid var(--line2);border-radius:10px;padding:8px 10px;background:#fff;font-size:13.5px}
+textarea{min-height:64px;resize:vertical}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);margin-top:8px}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.mover{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--line)}
+.mover:last-child{border-bottom:0}
+.mover .a{font-weight:600;color:var(--head)}
+.mover .b{font-size:12px;color:var(--muted)}
+.mover .v{font-weight:700;white-space:nowrap;font-variant-numeric:tabular-nums}
+.note-box{background:var(--s1);border-radius:var(--r2);padding:12px 14px;font-size:13px;color:var(--muted)}
+.note-box b{color:var(--text)}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.step{border:1px solid var(--line);border-radius:var(--r2);padding:14px;position:relative}
+.step .when{font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--accent)}
+.step h3{margin:4px 0 6px}
+.step p{margin:0;font-size:13px;color:var(--muted)}
+.step.now{border:2px solid var(--ink)}
+.step.now:after{content:"YOU ARE HERE";position:absolute;top:-9px;right:12px;background:var(--lime);font-size:10px;font-weight:800;padding:1px 7px;border-radius:5px}
+.obj{border:1.5px solid var(--line2);border-radius:var(--r2);overflow:hidden}
+.obj .h{background:var(--ink);color:#fff;padding:9px 12px;font-weight:700;font-size:13.5px}
+.obj .h span{color:var(--lime);font-weight:500;font-size:12px;margin-left:6px}
+.obj ul{margin:0;padding:10px 12px 12px 28px;font-size:12.5px;color:var(--muted)}
+.obj li{margin:2px 0}
+.obj code{color:var(--text);font-size:12px}
+.arrow{text-align:center;color:var(--dim);font-size:12px;padding:4px 0}
+.tree{font-size:13.5px}
+.tree .p{font-weight:700;color:var(--head);margin-top:10px}
+.tree .u{margin-left:16px;color:var(--text)}
+.tree .u span{color:var(--muted);font-size:12.5px}
+ul.tight{margin:6px 0 0;padding-left:18px}
+ul.tight li{margin:3px 0}
+.lockbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+
+/* modal + toast */
+.scrim{position:fixed;inset:0;background:rgba(29,29,27,.45);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}
+.modal{background:#fff;border-radius:var(--r);max-width:560px;width:100%;padding:22px;box-shadow:var(--shadow);max-height:90vh;overflow:auto}
+.modal h2{margin-bottom:6px}
+.modal .row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+.modal .acts{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
+#toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(30px);background:var(--ink);color:#fff;padding:11px 18px;border-radius:999px;font-weight:600;font-size:13.5px;opacity:0;transition:.25s;z-index:60;pointer-events:none;max-width:92vw;text-align:center}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+#toast b{color:var(--lime)}
+svg text{font-family:"Instrument Sans",system-ui,sans-serif}
+@media (max-width:640px){main{padding:16px 16px 60px}h1{font-size:24px}.top-in{padding:10px 16px}.ctrls{margin-left:0}}
+</style>
+</head>
+<body>
+<header class="top"><div class="top-in">
+  <div class="brand"><div class="mark"></div>DXR Cyber <span class="tag">Weekly Forecast</span></div>
+  <nav class="nav" id="nav"></nav>
+  <div class="ctrls">
+    <select class="pill" id="weekSel" aria-label="Forecast week"></select>
+    <div class="seg" id="measureSeg"><button data-m="gp" class="on">GP in Year</button><button data-m="rev">Revenue</button></div>
+    <span id="statusBadge"></span>
+    <button class="btn dark" id="lockBtn">Lock &amp; snapshot</button>
+  </div>
+</div></header>
+<div class="banner">Concept mock-up of a Salesforce LWC · <b>fictional accounts and figures</b> · names abbreviated · built on the new commercial structure · design ref XYP-FCST-001</div>
+<main id="app"></main>
+<div id="modalHost"></div>
+<div id="toast"></div>
+
+<script>
+/* ---------- deterministic fake data ---------- */
+let seed = 20261211;
+function rnd(){seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}
+const ri=(a,b)=>a+Math.floor(rnd()*(b-a+1));
+const pick=a=>a[Math.floor(rnd()*a.length)];
+const iso=d=>d.toISOString().slice(0,10);
+const addDays=(s,n)=>{const d=new Date(s+'T00:00:00Z');d.setUTCDate(d.getUTCDate()+n);return iso(d)};
+const dayDiff=(a,b)=>Math.round((new Date(b+'T00:00:00Z')-new Date(a+'T00:00:00Z'))/864e5);
+const randDate=(a,b)=>addDays(a,ri(0,dayDiff(a,b)));
+const fmtDate=s=>new Date(s+'T00:00:00Z').toLocaleDateString('en-GB',{day:'numeric',month:'short',timeZone:'UTC'});
+
+const Q={label:'FY27 Q1',start:'2026-11-01',end:'2027-01-31',weeks:13,week:6,fri:'2026-12-11',prevFri:'2026-12-04'};
+const PILLARS={
+  AM:{name:'Account Management',short:'AM',units:['am-st','am-ht']},
+  BD:{name:'Business Development',short:'BD',units:['bd']},
+  CA:{name:'Channel & Alliances',short:'C&A',units:['ca']}
+};
+const UNITS=[
+  {key:'am-st',pillar:'AM',name:'AM · Sarah T. pod',mgr:'Sarah T.',reps:['Laura P.','Bella R.','Michael P.','Josh W.','Jonny C.','Simron R.','Lucy D.'],status:'Submitted',subAt:'Thu 16:42',
+   adj:{cur:0,prior:0,reason:''},risks:'Ravensworth renewal: procurement now wants 3 quotes, so it could slip into Feb.',upside:'Two expansion MDR seats at existing logos if security budgets are released before Christmas.'},
+  {key:'am-ht',pillar:'AM',name:'AM · Harry T. pod',mgr:'Harry T.',reps:['Michael B.','James D.','Simon P.','Peter F.','Luke P.','Leah R.','Harvey R.'],status:'Submitted',subAt:'Thu 17:05',
+   adj:{cur:8000,prior:8000,reason:'NHS framework call-off. PO expected w/c 14 Dec but not yet raised in Salesforce.'},risks:'Year-end change freezes at two retail accounts.',upside:'Red Team extension at Marlow Capital.'},
+  {key:'bd',pillar:'BD',name:'Business Development',mgr:'Richard M.',reps:['David H.','Francesca R.','Andy W.','Charlie M.','Harry B.','Serge L.','Eva R.','Harvey B.','Joel C.','Josh N.','Millie S.','Zuhaib H.'],status:'Submitted',subAt:'Fri 08:12',
+   adj:{cur:-6000,prior:0,reason:'Haircut: two new-logo deals depend on January budget release.'},risks:'New-logo cycle is lengthening. Three deals have moved their close date twice.',upside:'Strong December inbound from the CE+ campaign.'},
+  {key:'ca',pillar:'CA',name:'Channel & Alliances',mgr:'Kris R.',reps:['Simon C.','Miles A.','Tom C.','Ralph F.','Oscar K.','Noah D.','Connor C.','Rakee D.','Grace H.','Shawn M.'],status:'In progress',subAt:null,
+   adj:{cur:12000,prior:15000,reason:'Two partner deal registrations approved but not yet created in Salesforce.'},risks:'',upside:''}
+];
+const UNIT=Object.fromEntries(UNITS.map(u=>[u.key,u]));
+const STAGES=['Qualify','Solution Validation','Proposal / Bid Submitted','Negotiation / Commercial Agreement'];
+const SHORT={'Qualify':'Qualify','Solution Validation':'Solution Val.','Proposal / Bid Submitted':'Proposal / Bid','Negotiation / Commercial Agreement':'Negotiation','Closed Won':'Closed Won','Closed Lost':'Closed Lost'};
+const CAT={'Qualify':'Pipeline','Solution Validation':'Pipeline','Proposal / Bid Submitted':'Best Case','Negotiation / Commercial Agreement':'Commit','Closed Won':'Closed','Closed Lost':'Omitted'};
+const PRE=['Northgate','Harbourline','Pennine','Ashcombe','Brightwater','Calder','Dunmore','Elmstead','Fernhill','Greyfriars','Halden','Ironbridge','Kingsmead','Larkfield','Marlow','Netherby','Oakhurst','Ravensworth','Severn','Thornbury','Wexcombe','Yarrow','Alderley','Bramcote','Coldharbour','Dovecote','Eastleigh','Foxley','Glenmore','Hollins','Kestrel','Linton','Moorgate','Pelham','Quayside','Redbourne','Stanmore','Tolworth','Upwell','Westbury'];
+const SUF=['Logistics','Insurance','Housing Group','Healthcare','Engineering','Capital','Retail','Foods','Legal LLP','Academy Trust','Utilities','Manufacturing','Energy','Travel','Building Society','Council','Pharma','Data Centres','Freight','Wealth'];
+const PROD=['Penetration Test (CREST)','MDR – 24/7 SOC','Cyber Essentials Plus','Vulnerability Management','Incident Response Retainer','Red Team Exercise','ISO 27001 Readiness','Phishing Simulation','vCISO Retainer','Cloud Security Review','SOC 2 Readiness','Web App Pen Test'];
+const PARTNERS=['Northbeam IT','Castlegate Solutions','Kestrel Comms','G-Cloud framework','Brightline MSP'];
+const NEXT=['Commercials agreed, awaiting PO','Proposal walkthrough Tue','Scoping call booked','Legal review of MSA','Budget sign-off at board 15 Dec','Procurement portal submission','Technical validation with IT lead','Renewal quote sent','Champion out until 4 Jan','Security questionnaire returned','Awaiting partner deal reg approval','Pricing revision requested'];
+const OVR_NOTES=['Paper not with procurement yet','Champion confirmed budget, so pulled to Commit','Board date has already slipped once','Verbal yes from CFO','Competitive: incumbent MDR vendor came in late','PO raised, awaiting number'];
+const usedAcct=new Set();
+function acct(){let a;do{a=pick(PRE)+' '+pick(SUF)}while(usedAcct.has(a));usedAcct.add(a);return a}
+
+const REPS={};const DEALS=[];let id=1;
+function mk(u,rep,closed){
+  const p=u.pillar;
+  const gp=Math.round((p==='AM'?ri(3,24):p==='BD'?ri(3,20):ri(5,30))*1000/50)*50+ri(0,19)*50;
+  const margin=0.32+rnd()*0.36;
+  const type=p==='AM'?(rnd()<.62?'Renewal':'Expansion'):'New Business';
+  const st={exists:true,stage:'',cat:'',mgr:'',close:'',gp,rev:Math.round(gp/margin/100)*100};
+  const d={id:'OPP-'+(24000+id++),unit:u.key,pillar:p,owner:rep,acct:acct(),product:pick(PROD),type,partner:p==='CA'?pick(PARTNERS):(rnd()<.08?pick(PARTNERS):''),next:pick(NEXT),note:'',margin,cur:st,prior:null};
+  if(closed){st.gp=Math.round(st.gp*.85/50)*50;st.rev=Math.round(st.gp/margin/100)*100;st.stage='Closed Won';st.close=randDate('2026-11-03','2026-12-03');}
+  else{
+    st.stage=STAGES[pick([0,1,1,2,2,3,3,3])];
+    const r=rnd();
+    st.close=r<.05?randDate('2026-12-01','2026-12-10'):r<.85?randDate('2026-12-14','2027-01-29'):randDate('2027-02-02','2027-04-20');
+  }
+  d.prior={...st};
+  DEALS.push(d);return d;
+}
+UNITS.forEach(u=>u.reps.forEach(rep=>{
+  REPS[rep]={unit:u.key,target:(u.pillar==='AM'?ri(55,85):u.pillar==='BD'?ri(35,55):ri(40,65))*1000};
+  for(let i=ri(0,1)+(rnd()<.55?1:0);i>0;i--)mk(u,rep,true);
+  for(let i=ri(3,5);i>0;i--)mk(u,rep,false);
+}));
+// week-on-week movement since last Friday's snapshot
+DEALS.forEach(d=>{
+  const c=d.cur,p=d.prior;if(c.stage==='Closed Won')return;
+  const idx=STAGES.indexOf(c.stage),r=rnd();
+  if(r<.07){p.exists=false}
+  else if(r<.16&&idx>=1){p.stage=STAGES[idx-1]}
+  else if(r<.20&&idx<=2){p.stage=STAGES[idx+1]}
+  else if(r<.225){p.close=randDate('2026-12-14','2027-01-25');c.close=randDate('2027-02-03','2027-03-20');if(idx<2){c.stage=p.stage=STAGES[2]}}
+  else if(r<.255){c.close=randDate('2026-12-15','2027-01-28');p.close=randDate('2027-02-05','2027-03-15')}
+  else if(r<.315){p.gp=Math.round(c.gp*(rnd()<.5?0.72+rnd()*.15:1.15+rnd()*.3)/50)*50;p.rev=Math.round(p.gp/d.margin/100)*100}
+  else if(r<.375){p.stage=STAGES[3];c.stage='Closed Won';if(c.close>Q.end||c.close<'2026-12-05')p.close=randDate('2026-12-14','2026-12-31');c.close=randDate('2026-12-07','2026-12-10')}
+  else if(r<.39){p.stage=STAGES[pick([2,3])];c.stage='Closed Lost';if(c.close>Q.end)p.close=randDate('2026-12-14','2027-01-20');c.close='2026-12-09'}
+});
+DEALS.forEach(d=>{
+  const c=d.cur,p=d.prior;c.cat=CAT[c.stage];p.cat=CAT[p.stage];c.mgr=c.cat;p.mgr=p.cat;
+  const open=!c.stage.startsWith('Closed');
+  if(open&&(c.cat==='Commit'||c.cat==='Best Case')&&rnd()<.16){
+    c.mgr=c.cat==='Commit'?'Best Case':'Commit';d.note=pick(OVR_NOTES);
+    if(p.exists&&p.stage===c.stage)p.mgr=c.mgr;
+  }
+});
+
+/* ---------- state + maths ---------- */
+const S={view:'cockpit',unit:'am-st',measure:'gp',week:6,locked:false,lockedAt:null,filter:'quarter',scope:'ALL',moveFilter:null,trendScope:'ALL'};
+const live=()=>S.week===6;
+const editable=()=>live()&&!S.locked;
+const W=()=>live()?'cur':'prior';
+const inQ=st=>st.close>=Q.start&&st.close<=Q.end;
+const v=st=>st[S.measure];
+const mconv=x=>S.measure==='gp'?x:Math.round(x/0.45/100)*100;
+const inCall=st=>st.exists&&inQ(st)&&(st.mgr==='Commit'||st.mgr==='Closed');
+function totals(keys,which){
+  which=which||W();
+  const t={target:0,closed:0,commit:0,bc:0,pipe:0,repCommit:0,adj:0,lines:0};
+  keys.forEach(k=>{const u=UNIT[k];u.reps.forEach(r=>t.target+=mconv(REPS[r].target));t.adj+=mconv(which==='cur'?u.adj.cur:u.adj.prior)});
+  DEALS.forEach(d=>{
+    if(!keys.includes(d.unit))return;const st=d[which];if(!st.exists)return;
+    if(inQ(st)||inQ(d.cur))t.lines++;
+    if(!inQ(st))return;const x=v(st);
+    if(st.mgr==='Closed')t.closed+=x;else if(st.mgr==='Commit')t.commit+=x;else if(st.mgr==='Best Case')t.bc+=x;else if(st.mgr==='Pipeline')t.pipe+=x;
+    if(st.cat==='Commit')t.repCommit+=x;
+  });
+  t.call=t.closed+t.commit+t.adj;t.repCall=t.closed+t.repCommit;t.gap=t.target-t.call;
+  t.cov=(t.commit+t.bc+t.pipe)/Math.max(1,t.target-t.closed);t.pct=t.call/Math.max(1,t.target);
+  return t;
+}
+const ALLK=UNITS.map(u=>u.key);
+const scopeKeys=s=>s==='ALL'?ALLK:PILLARS[s]?PILLARS[s].units:[s];
+const scopeName=s=>s==='ALL'?'All pillars':PILLARS[s]?PILLARS[s].name:UNIT[s].name;
+function classify(d){
+  const p=d.prior,c=d.cur,pv=inCall(p)?v(p):0,cv=inCall(c)?v(c):0;
+  if(!pv&&cv)return{k:!p.exists?'New':!inQ(p)?'Pulled in':'Upgraded',x:cv};
+  if(pv&&!cv)return{k:c.stage==='Closed Lost'?'Lost':!inQ(c)?'Pushed out':'Downgraded',x:-pv};
+  if(pv&&cv&&pv!==cv)return{k:cv>pv?'Amount up':'Amount down',x:cv-pv};
+  if(pv&&cv&&p.mgr!=='Closed'&&c.mgr==='Closed')return{k:'Won',x:0,conv:cv};
+  return null;
+}
+const BR_ORDER=['New','Pulled in','Upgraded','Amount up','Amount down','Downgraded','Pushed out','Lost','Adjustment'];
+function bridge(keys){
+  const b=Object.fromEntries(BR_ORDER.map(k=>[k,0]));let won=0;const movers=[];
+  DEALS.forEach(d=>{if(!keys.includes(d.unit))return;const c=classify(d);if(!c)return;
+    if(c.k==='Won'){won+=c.conv;movers.push({d,k:'Won',x:0,conv:c.conv});return}
+    b[c.k]+=c.x;movers.push({d,k:c.k,x:c.x});});
+  keys.forEach(k=>b.Adjustment+=mconv(UNIT[k].adj.cur)-mconv(UNIT[k].adj.prior));
+  const start=totals(keys,'prior').call,end=totals(keys,'cur').call;
+  return{b,start,end,won,movers};
+}
+function tags(d){
+  const p=d.prior,c=d.cur,out=[];const open=!c.stage.startsWith('Closed');
+  if(!live()){if(p.mgr!==p.cat&&!p.stage.startsWith('Closed'))out.push(['ovr','Override']);return out}
+  if(!p.exists)out.push(['new','New']);
+  if(c.stage==='Closed Won'&&p.stage!=='Closed Won')out.push(['won','Won']);
+  if(c.stage==='Closed Lost'&&p.stage!=='Closed Lost')out.push(['lost','Lost']);
+  if(p.exists&&inQ(p)&&!inQ(c))out.push(['push','Pushed → '+fmtDate(c.close)]);
+  if(p.exists&&!inQ(p)&&inQ(c))out.push(['pull','Pulled in']);
+  const pi=STAGES.indexOf(p.stage),ci=STAGES.indexOf(c.stage);
+  if(p.exists&&pi>=0&&ci>=0&&ci>pi)out.push(['up','Stage ↑']);
+  if(p.exists&&pi>=0&&ci>=0&&ci<pi)out.push(['down','Stage ↓']);
+  if(p.exists&&v(p)!==v(c))out.push(['amt',(v(c)>v(p)?'£ ↑ ':'£ ↓ ')+money(Math.abs(v(c)-v(p)))]);
+  if(open&&c.mgr!==c.cat)out.push(['ovr','Override']);
+  if(open&&c.close<Q.fri)out.push(['due','Overdue']);
+  return out;
+}
+
+/* ---------- formatting ---------- */
+function money(x){const a=Math.abs(x),s=x<0?'−':'';if(a>=1e6)return s+'£'+(a/1e6).toFixed(2)+'m';if(a>=1e5)return s+'£'+Math.round(a/1e3)+'k';if(a>=1e3)return s+'£'+(a/1e3).toFixed(1)+'k';return s+'£'+Math.round(a)}
+const sgn=x=>(x>0?'+':x<0?'':'±')+money(x);
+const dcls=x=>x>0?'pos':x<0?'neg':'muted';
+const pct=x=>Math.round(x*100)+'%';
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const catCls=c=>c.split(' ')[0];
+const mLabel=()=>S.measure==='gp'?'GP in Year':'Revenue';
+
+/* ---------- header ---------- */
+const VIEWS=[['cockpit','CCO roll-up'],['unit','Pillar & team'],['variance','Week-on-week variance'],['trend','Trend & accuracy'],['rhythm','Friday rhythm'],['build','How it’s built']];
+function renderHeader(){
+  document.getElementById('nav').innerHTML=VIEWS.map(([k,l])=>`<button data-v="${k}" class="${S.view===k?'on':''}">${l}</button>`).join('');
+  const ws=document.getElementById('weekSel');
+  ws.innerHTML=`<option value="6">${Q.label} · W06 · w/e Fri 11 Dec${S.locked?' (locked)':' (open)'}</option><option value="5">${Q.label} · W05 · w/e Fri 4 Dec (locked)</option>`+(S.locked?`<option value="7" disabled>${Q.label} · W07 · w/e Fri 18 Dec (open, carried forward)</option>`:'');
+  ws.value=String(S.week);
+  document.querySelectorAll('#measureSeg button').forEach(b=>b.classList.toggle('on',b.dataset.m===S.measure));
+  const lockedView=!live()||S.locked;
+  document.getElementById('statusBadge').innerHTML=lockedView?`<span class="badge locked"><span class="dot"></span>Snapshot · read-only</span>`:`<span class="badge open"><span class="dot"></span>Working week · editable</span>`;
+  const lb=document.getElementById('lockBtn');
+  lb.disabled=!live();lb.textContent=S.locked?'Unlock (admin)':'Lock & snapshot';lb.className='btn '+(S.locked?'ghost':'dark');
+}
+document.getElementById('nav').addEventListener('click',e=>{const b=e.target.closest('button');if(b){S.view=b.dataset.v;render();window.scrollTo({top:0})}});
+document.getElementById('weekSel').addEventListener('change',e=>{S.week=+e.target.value;render()});
+document.getElementById('measureSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(b){S.measure=b.dataset.m;render()}});
+document.getElementById('lockBtn').addEventListener('click',()=>{if(S.locked){S.locked=false;S.lockedAt=null;toast('W06 reopened by admin. The unlock is logged in Meeting Notes.');render()}else openLock()});
+
+/* ---------- views ---------- */
+function kpi(l,val,d,hl){return`<div class="card kpi${hl?' hl':''}"><div class="l">${l}</div><div class="v">${val}</div><div class="d">${d||'&nbsp;'}</div></div>`}
+function deltaTxt(keys){if(!live())return'vs W04 (not in mock-up)';const d=totals(keys,'cur').call-totals(keys,'prior').call;return`<span class="${dcls(d)}">${sgn(d)}</span> vs last Friday`}
+function statusBadge(u){
+  if(S.locked||!live())return`<span class="badge locked">Locked</span>`;
+  return u.status==='Submitted'?`<span class="badge open">Submitted ${u.subAt||''}</span>`:`<span class="badge warn">${u.status}</span>`;
+}
+function viewCockpit(){
+  const t=totals(ALLK),sub=UNITS.filter(u=>u.status==='Submitted').length;
+  const rows=Object.entries(PILLARS).map(([pk,P])=>{
+    const pt=totals(P.units),pd=live()?pt.call-totals(P.units,'prior').call:null;
+    const subs=P.units.map(k=>UNIT[k]);
+    let h=`<tr class="click" data-unit="${P.units[0]}"><td><b>${P.name}</b><div class="dim" style="font-size:12px">${subs.map(u=>u.mgr).join(' · ')}</div></td>${cells(pt,pd)}<td>${subs.length>1?subs.map(statusBadge).join(' '):statusBadge(subs[0])}</td></tr>`;
+    if(subs.length>1)subs.forEach(u=>{const ut=totals([u.key]),ud=live()?ut.call-totals([u.key],'prior').call:null;h+=`<tr class="sub click" data-unit="${u.key}"><td>${u.name.replace('AM · ','')}</td>${cells(ut,ud)}<td></td></tr>`});
+    return h;}).join('');
+  const td=live()?t.call-totals(ALLK,'prior').call:null;
+  const br=live()?bridge(ALLK):null;
+  const top=br?br.movers.filter(m=>m.k!=='Won').sort((a,b)=>Math.abs(b.x)-Math.abs(a.x)).slice(0,6):[];
+  return`
+  <div class="hero"><div><h1>Friday forecast · ${Q.label}, week ${live()?6:5} of 13</h1>
+    <p>${live()?(S.locked?`Locked ${S.lockedAt}. This is the frozen snapshot. W07 has opened with manager categories and notes carried forward.`:`Meeting Fri 11 Dec, 10:00. <b>${sub} of 4</b> submissions are in. Click a pillar to drill into its team and deals.`):'Viewing last Friday\'s locked snapshot (W05). Read-only.'}</p></div>
+    <div class="legend"><span>Measure: <b>${mLabel()}</b></span><span>Call = Closed + manager Commit + adjustment</span></div></div>
+  <div class="grid kpis">
+    ${kpi('Quarter target',money(t.target),'Rep_Target__c, Nov–Jan')}
+    ${kpi('Closed won',money(t.closed),pct(t.closed/t.target)+' of target')}
+    ${kpi('Manager call',money(t.call),deltaTxt(ALLK),true)}
+    ${kpi('Gap to target',money(t.gap),pct(t.pct)+' of target called')}
+    ${kpi('Best Case upside',money(t.bc),'not in the call')}
+    ${kpi('Coverage of remaining',t.cov.toFixed(1)+'×','Commit + BC + Pipeline ÷ (target − closed)')}
+  </div>
+  <div class="card" style="margin-top:14px"><h2>Pillar roll-up</h2><div class="sub">Δ is this Friday's call against last Friday's locked snapshot. Rep call uses the rep's own forecast category; the manager call uses the manager's judgement.</div>
+  <div class="scroll"><table><thead><tr><th>Pillar</th><th class="r">Target</th><th class="r">Closed</th><th class="r">Commit</th><th class="r">Adj.</th><th class="r">Manager call</th><th class="r">Δ vs LW</th><th>% of target</th><th class="r">Rep call</th><th class="r">Best Case</th><th class="r">Pipeline</th><th class="r">Coverage</th><th>Submission</th></tr></thead>
+  <tbody>${rows}<tr class="tot"><td>Total DXR</td>${cells(t,td)}<td></td></tr></tbody></table></div></div>
+  <div class="grid two" style="margin-top:14px">
+    <div class="card"><h2>Target vs call</h2><div class="sub">Closed + Commit (+ adjustment) is the call. Best Case shows the upside on top.</div>${barsSvg()}
+      <div class="legend"><span><i style="background:var(--ink)"></i>Closed</span><span><i style="background:var(--lime)"></i>Commit + adj.</span><span><i style="background:var(--cyan-f)"></i>Best Case</span><span><i style="background:var(--bad)"></i>Target</span></div></div>
+    <div class="card"><h2>Biggest call movers since last Friday</h2><div class="sub">${live()?'From the line-level comparison with the W05 snapshot.':'Switch to W06 to see movement.'}</div>
+      ${top.map(m=>`<div class="mover"><div><div class="a">${esc(m.d.acct)}</div><div class="b">${m.k} · ${esc(m.d.owner)} · ${PILLARS[m.d.pillar].short}</div></div><div class="v ${dcls(m.x)}">${sgn(m.x)}</div></div>`).join('')||'<div class="muted">—</div>'}
+      ${br?`<div style="margin-top:10px"><button class="btn ghost" data-go="variance">Open the full bridge →</button></div>`:''}</div>
+  </div>`;
+}
+function cells(t,d){
+  return`<td class="r num">${money(t.target)}</td><td class="r num">${money(t.closed)}</td><td class="r num">${money(t.commit)}</td><td class="r num ${t.adj?'':'dim'}">${t.adj?sgn(t.adj):'–'}</td><td class="r num"><b>${money(t.call)}</b></td>
+  <td class="r num ${d==null?'dim':dcls(d)}">${d==null?'–':sgn(d)}</td><td><div style="display:flex;align-items:center;gap:8px"><div class="bar" style="flex:1"><i style="width:${Math.min(100,t.pct*100)}%;background:${t.pct>=.9?'var(--accent)':t.pct>=.7?'var(--warn)':'var(--bad)'}"></i></div><span class="num" style="font-size:12px">${pct(t.pct)}</span></div></td>
+  <td class="r num muted">${money(t.repCall)}</td><td class="r num">${money(t.bc)}</td><td class="r num">${money(t.pipe)}</td><td class="r num">${t.cov.toFixed(1)}×</td>`;
+}
+function barsSvg(){
+  const rows=Object.entries(PILLARS).map(([k,P])=>({n:P.name,t:totals(P.units)}));
+  const max=Math.max(...rows.map(r=>Math.max(r.t.target,r.t.closed+r.t.commit+Math.max(0,r.t.adj)+r.t.bc)))*1.08;
+  const W0=150,WW=600,H=54;const x=val=>W0+val/max*(WW-W0-20);
+  let s=`<svg viewBox="0 0 ${WW} ${rows.length*H+10}" width="100%" role="img" aria-label="Target versus call by pillar">`;
+  rows.forEach((r,i)=>{const y=i*H+12,t=r.t;const c1=x(t.closed)-W0,c2=x(t.closed+t.commit+t.adj)-x(t.closed),c3=x(t.closed+t.commit+t.adj+t.bc)-x(t.closed+t.commit+t.adj);
+    s+=`<text x="0" y="${y+17}" font-size="13" font-weight="600" fill="#1d1d1b">${r.n}</text><text x="0" y="${y+33}" font-size="11.5" fill="#5d626c">call ${money(t.call)} · ${pct(t.pct)}</text>
+    <rect x="${W0}" y="${y+4}" width="${c1}" height="26" fill="#1d1d1b" rx="3"/><rect x="${W0+c1}" y="${y+4}" width="${Math.max(0,c2)}" height="26" fill="#a6ff33"/><rect x="${W0+c1+Math.max(0,c2)}" y="${y+4}" width="${Math.max(0,c3)}" height="26" fill="#9ff3f3"/>
+    <line x1="${x(t.target)}" x2="${x(t.target)}" y1="${y-2}" y2="${y+36}" stroke="#c93c3c" stroke-width="2.5"/><text x="${x(t.target)+4}" y="${y-1}" font-size="10.5" fill="#c93c3c">${money(t.target)}</text>`});
+  return s+'</svg>';
+}
+
+function viewUnit(){
+  const u=UNIT[S.unit],t=totals([u.key]),d=live()?t.call-totals([u.key],'prior').call:null;
+  const repRows=u.reps.map(r=>{
+    const ds=DEALS.filter(x=>x.owner===r),tt={c:0,cm:0,bc:0,p:0,pc:0};
+    ds.forEach(x=>{const st=x[W()];if(st.exists&&inQ(st)){const val=v(st);if(st.mgr==='Closed')tt.c+=val;else if(st.mgr==='Commit')tt.cm+=val;else if(st.mgr==='Best Case')tt.bc+=val}
+      const p=x.prior;if(live()&&inCall(p))tt.pc+=v(p);});
+    const call=tt.c+tt.cm,tg=mconv(REPS[r].target),dd=live()?call-tt.pc:null;
+    return`<tr><td><b>${r}</b></td><td class="r num">${money(tg)}</td><td class="r num">${money(tt.c)}</td><td class="r num">${money(tt.cm)}</td><td class="r num"><b>${money(call)}</b></td><td class="r num ${dd==null?'dim':dcls(dd)}">${dd==null?'–':sgn(dd)}</td><td><div class="bar"><i style="width:${Math.min(100,call/tg*100)}%"></i></div></td><td class="r num">${money(tt.bc)}</td></tr>`}).join('');
+  const all=DEALS.filter(x=>x.unit===u.key&&x[W()].exists);
+  const F={
+    quarter:['This quarter',x=>inQ(x[W()])||(live()&&x.prior.exists&&inQ(x.prior))],
+    call:['In call',x=>inCall(x[W()])],
+    movers:['Movers',x=>live()&&!!classify(x)],
+    ovr:['Overrides',x=>{const s=x[W()];return s.mgr!==s.cat&&!s.stage.startsWith('Closed')}],
+    push:['Pushed / lost',x=>live()&&x.prior.exists&&((inQ(x.prior)&&!inQ(x.cur))||(x.cur.stage==='Closed Lost'&&x.prior.stage!=='Closed Lost'))],
+    due:['Overdue',x=>{const s=x[W()];return!s.stage.startsWith('Closed')&&s.close<(live()?Q.fri:Q.prevFri)}],
+    next:['Next quarter',x=>{const s=x[W()];return s.close>Q.end&&!s.stage.startsWith('Closed')}]
+  };
+  const list=all.filter(F[S.filter][1]).sort((a,b)=>(inQ(b[W()])-inQ(a[W()]))||v(b[W()])-v(a[W()]));
+  const ed=editable();
+  const rowsD=list.map(x=>{const s=x[W()],p=x.prior;const ch=live()&&p.exists;
+    const closed=s.stage.startsWith('Closed');
+    const mgrCell=ed&&!closed?`<select data-mgr="${x.id}" class="${s.mgr!==s.cat?'ovr':''}">${['Commit','Best Case','Pipeline','Omitted'].map(o=>`<option ${o===s.mgr?'selected':''} value="${o}">${o==='Omitted'?'Omit':o}</option>`).join('')}</select>`:`<span class="cat ${catCls(s.mgr)}">${s.mgr}</span>`;
+    return`<tr><td class="deal"><b>${esc(x.acct)}</b><span>${esc(x.product)} · ${x.type}${x.partner?' · via '+esc(x.partner):''}</span></td><td>${x.owner}</td>
+    <td>${ch&&p.stage!==s.stage?`<span class="was">${SHORT[p.stage]}</span>`:''}${SHORT[s.stage]}</td>
+    <td class="num">${ch&&p.close!==s.close?`<span class="was">${fmtDate(p.close)}</span>`:''}${fmtDate(s.close)}</td>
+    <td class="r num">${ch&&v(p)!==v(s)?`<span class="was">${money(v(p))}</span>`:''}<b>${money(v(s))}</b></td>
+    <td><span class="cat ${catCls(s.cat)}">${s.cat}</span></td><td>${mgrCell}</td><td>${tags(x).map(([c,l])=>`<span class="tag t-${c}">${l}</span>`).join('')}</td>
+    <td>${ed?`<input class="note" data-note="${x.id}" value="${esc(x.note)}" placeholder="Manager note…">`:`<span class="muted" style="font-size:12.5px">${esc(x.note)||'–'}</span>`}<div class="dim" style="font-size:11.5px;margin-top:2px">Next: ${esc(x.next)}</div></td></tr>`}).join('');
+  const adjV=mconv(u.adj.cur);
+  return`
+  <div class="hero"><div><h1>${u.name}</h1><p>Manager <b>${u.mgr}</b> · ${u.reps.length} reps · ${PILLARS[u.pillar].name}. Set your judgement on each deal; the rep's own category is never changed.</p></div>
+  <div>${statusBadge(u)}</div></div>
+  <div class="chips">${UNITS.map(x=>`<button class="chip ${x.key===S.unit?'on':''}" data-unit="${x.key}">${x.name}</button>`).join('')}</div>
+  <div class="grid kpis">
+    ${kpi('Target',money(t.target))}${kpi('Closed',money(t.closed))}${kpi('Commit (manager)',money(t.commit),'rep says '+money(t.repCommit))}
+    ${kpi('Manager call',money(t.call),d==null?'':`<span class="${dcls(d)}">${sgn(d)}</span> vs last Friday`,true)}
+    ${kpi('Gap',money(t.gap),pct(t.pct)+' of target')}${kpi('Coverage',t.cov.toFixed(1)+'×','Best Case '+money(t.bc))}
+  </div>
+  <div class="grid two" style="margin-top:14px">
+    <div class="card"><h2>Team</h2><div class="sub">Quarter to date in ${mLabel()}. A rep's call uses the manager categories.</div>
+      <div class="scroll"><table><thead><tr><th>Rep</th><th class="r">Target</th><th class="r">Closed</th><th class="r">Commit</th><th class="r">Call</th><th class="r">Δ LW</th><th>Attain.</th><th class="r">Best Case</th></tr></thead><tbody>${repRows}</tbody></table></div></div>
+    <div class="card"><h2>Submission</h2><div class="sub">Due Thursday 17:00. You can still edit until the week is locked after Friday's meeting.</div>
+      <label class="f">Manager adjustment (${mLabel()}, signed)</label><input class="inp num" id="adj" type="number" step="500" value="${adjV}" ${ed?'':'disabled'}>
+      <label class="f">Adjustment reason <span class="dim">(required if ≠ 0)</span></label><textarea id="adjR" ${ed?'':'disabled'}>${esc(u.adj.reason)}</textarea>
+      <label class="f">Key risks</label><textarea id="risks" ${ed?'':'disabled'}>${esc(u.risks)}</textarea>
+      <label class="f">Key upside</label><textarea id="upside" ${ed?'':'disabled'}>${esc(u.upside)}</textarea>
+      <div style="display:flex;gap:8px;margin-top:12px;align-items:center;flex-wrap:wrap"><button class="btn lime" id="submitBtn" ${ed?'':'disabled'}>${u.status==='Submitted'?'Re-submit':'Submit forecast'}</button><span class="muted" style="font-size:12.5px">${u.status==='Submitted'?'Last submitted '+u.subAt:'Not submitted yet'}</span></div>
+    </div>
+  </div>
+  <div class="card" style="margin-top:14px"><h2>Deals</h2><div class="sub">${ed?'Change the <b>manager category</b> and the totals, the roll-up and the bridge update live. Struck-through values are last Friday\'s snapshot.':'Read-only snapshot.'}</div>
+    <div class="chips">${Object.entries(F).map(([k,[l,fn]])=>`<button class="chip ${S.filter===k?'on':''}" data-filter="${k}">${l}<span class="n">${all.filter(fn).length}</span></button>`).join('')}</div>
+    <div class="scroll"><table><thead><tr><th>Deal</th><th>Owner</th><th>Stage</th><th>Close</th><th class="r">${mLabel()}</th><th>Rep cat.</th><th>Manager cat.</th><th>Movement</th><th>Note / next step</th></tr></thead><tbody>${rowsD||'<tr><td colspan="9" class="muted">No deals match this filter.</td></tr>'}</tbody></table></div>
+  </div>`;
+}
+
+function viewVariance(){
+  if(!live())return`<div class="hero"><div><h1>Week-on-week variance</h1><p>Variance is calculated between consecutive locked snapshots. The mock-up models W05 → W06 only, so switch the week back to W06.</p></div></div>`;
+  const keys=scopeKeys(S.scope),br=bridge(keys);
+  const sum=br.start+Object.values(br.b).reduce((a,b)=>a+b,0);
+  const ok=Math.abs(sum-br.end)<1;
+  const mv=br.movers.filter(m=>!S.moveFilter||m.k===S.moveFilter).sort((a,b)=>Math.abs(b.x||b.conv)-Math.abs(a.x||a.conv));
+  const pRows=Object.entries(PILLARS).map(([k,P])=>{const b=bridge(P.units);return`<tr><td><b>${P.name}</b></td><td class="r num">${money(b.start)}</td>${BR_ORDER.map(o=>`<td class="r num ${b.b[o]?dcls(b.b[o]):'dim'}">${b.b[o]?sgn(b.b[o]):'–'}</td>`).join('')}<td class="r num"><b>${money(b.end)}</b></td></tr>`}).join('');
+  return`
+  <div class="hero"><div><h1>What changed since last Friday</h1><p>Bridge from the W05 locked call (Fri 4 Dec) to this week's call. Every pound is explained by a deal-level movement or by a change in the manager adjustment.</p></div>
+  <span class="badge ${ok?'open':'warn'}">${ok?'✓ Bridge reconciles':'Bridge does not reconcile'}</span></div>
+  <div class="chips">${['ALL','AM','BD','CA',...ALLK.slice(0,2)].map(s=>`<button class="chip ${S.scope===s?'on':''}" data-scope="${s}">${s==='ALL'?'All pillars':PILLARS[s]?PILLARS[s].name:UNIT[s].name}</button>`).join('')}</div>
+  <div class="card"><h2>${scopeName(S.scope)} · ${mLabel()}</h2><div class="sub">Click a bar to filter the movers below. ${br.won?`<b>${money(br.won)}</b> converted from Commit to Closed Won this week (no change to the call).`:''}</div>
+    ${waterfall(br)}</div>
+  <div class="grid two" style="margin-top:14px">
+    <div class="card"><h2>Movers ${S.moveFilter?`· ${S.moveFilter} <button class="chip" data-mf="">clear</button>`:''}</h2><div class="sub">${mv.length} deal${mv.length===1?'':'s'}. These become <code>Forecast_Line__c.Movement__c</code> at lock.</div>
+      <div class="scroll"><table><thead><tr><th>Deal</th><th>Movement</th><th>Owner</th><th>Was → now</th><th class="r">Call Δ</th></tr></thead><tbody>
+      ${mv.map(m=>{const p=m.d.prior,c=m.d.cur;return`<tr><td class="deal"><b>${esc(m.d.acct)}</b><span>${esc(m.d.product)}</span></td><td>${m.k}</td><td>${m.d.owner}</td><td style="font-size:12.5px">${p.exists?`${p.mgr} · ${fmtDate(p.close)} · ${money(v(p))}`:'<i>not in snapshot</i>'}<br>→ ${c.mgr} · ${fmtDate(c.close)} · ${money(v(c))}</td><td class="r num ${dcls(m.x)}"><b>${m.k==='Won'?'conv. '+money(m.conv):sgn(m.x)}</b></td></tr>`}).join('')||'<tr><td colspan="5" class="muted">None</td></tr>'}
+      </tbody></table></div></div>
+    <div class="card dark"><h2>How to read the bridge</h2><ul class="tight" style="font-size:13.5px;color:#cfd1d5">
+      <li><b style="color:#fff">New</b>: not on last Friday's snapshot, now in the call.</li>
+      <li><b style="color:#fff">Pulled in</b>: close date moved into this quarter.</li>
+      <li><b style="color:#fff">Upgraded</b>: moved into Commit from Best Case or Pipeline (including deals won from upside).</li>
+      <li><b style="color:#fff">Amount ↑ / ↓</b>: in the call both weeks, but the value changed.</li>
+      <li><b style="color:#fff">Downgraded</b>: moved out of Commit.</li>
+      <li><b style="color:#fff">Pushed out</b>: close date moved beyond 31 Jan.</li>
+      <li><b style="color:#fff">Lost</b>: was in the call, now Closed Lost.</li>
+      <li><b style="color:#fff">Adjustment</b>: change in the managers' signed adjustment.</li></ul>
+      <p style="font-size:13px;color:#b9bcc2;margin:12px 0 0">Identity tested at lock (T6): last call + Σ movements = this call.</p></div>
+  </div>
+  <div class="card" style="margin-top:14px"><h2>Bridge by pillar</h2><div class="scroll"><table><thead><tr><th>Pillar</th><th class="r">Last Fri</th>${BR_ORDER.map(o=>`<th class="r">${o}</th>`).join('')}<th class="r">This Fri</th></tr></thead><tbody>${pRows}</tbody></table></div></div>`;
+}
+function waterfall(br){
+  const steps=[{l:'Last Fri call',t:'total',v:br.start}];let run=br.start;
+  BR_ORDER.forEach(k=>{steps.push({l:k,t:'step',v:br.b[k],from:run});run+=br.b[k]});
+  steps.push({l:'This Fri call',t:'total',v:br.end});
+  let lo=Infinity,hi=-Infinity;steps.forEach(s=>{const a=s.t==='total'?[0,s.v]:[s.from,s.from+s.v];lo=Math.min(lo,...a);hi=Math.max(hi,...a)});
+  lo=Math.max(0,lo-(hi-lo)*.25);const WW=980,H=300,top=28,bot=250,n=steps.length,bw=WW/n;
+  const y=val=>bot-(val-lo)/(hi-lo||1)*(bot-top);
+  let s=`<div class="scroll"><svg viewBox="0 0 ${WW} ${H}" width="100%" style="min-width:720px" role="img" aria-label="Forecast call bridge">`;
+  s+=`<line x1="0" x2="${WW}" y1="${bot}" y2="${bot}" stroke="rgba(43,48,58,.22)"/>`;
+  steps.forEach((st,i)=>{const x=i*bw+bw*.16,w=bw*.68;let y1,y2,fill;
+    if(st.t==='total'){y1=y(st.v);y2=bot;fill='#1d1d1b'}else{const a=st.from,b=st.from+st.v;y1=y(Math.max(a,b));y2=y(Math.min(a,b));fill=st.v>0?'#a6ff33':st.v<0?'#e46a6a':'#d8dadd'}
+    const h=Math.max(st.t==='step'&&st.v===0?2:1,y2-y1);
+    s+=`<g ${st.t==='step'&&st.l!=='Adjustment'?`data-mf="${st.l}" style="cursor:pointer"`:''}><rect x="${x}" y="${y1}" width="${w}" height="${h}" rx="3" fill="${fill}" ${S.moveFilter===st.l?'stroke="#1d1d1b" stroke-width="2"':''}/>
+    <text x="${x+w/2}" y="${y1-7}" text-anchor="middle" font-size="12" font-weight="700" fill="${st.t==='total'?'#1d1d1b':st.v<0?'#c93c3c':st.v>0?'#3b7a00':'#8a8e96'}">${st.t==='total'?money(st.v):st.v?sgn(st.v):'–'}</text>
+    <text x="${x+w/2}" y="${bot+18}" text-anchor="middle" font-size="11.5" fill="#5d626c">${st.l}</text></g>`;
+    if(i<n-1){const nextY=st.t==='total'?y(st.v):y(st.from+st.v);s+=`<line x1="${x+w}" x2="${x+bw}" y1="${nextY}" y2="${nextY}" stroke="rgba(43,48,58,.3)" stroke-dasharray="3 3"/>`}
+  });
+  return s+'</svg></div>';
+}
+
+function history(keys){
+  // W01–W04 synthesised; W05 = locked prior; W06 = live
+  const w5=totals(keys,'prior'),w6=totals(keys,'cur');const f=[.84,.88,.93,.97];
+  const calls=f.map((x,i)=>Math.round(w5.call*x+(i%2?1:-1)*w5.target*.01));calls.push(w5.call);calls.push(w6.call);
+  const closed=[.18,.35,.55,.78].map(x=>Math.round(w5.closed*x));closed.push(w5.closed);closed.push(w6.closed);
+  return{calls,closed,target:w6.target};
+}
+function viewTrend(){
+  const keys=scopeKeys(S.trendScope),h=history(keys);
+  const WW=900,H=300,L=60,R=20,T=20,B=40,wk=13;
+  const max=Math.max(h.target,...h.calls)*1.1;const x=i=>L+i*(WW-L-R)/(wk-1),y=val=>T+(1-val/max)*(H-T-B);
+  let s=`<div class="scroll"><svg viewBox="0 0 ${WW} ${H}" width="100%" style="min-width:600px" role="img" aria-label="Call trend by week">`;
+  for(let g=0;g<=4;g++){const val=max*g/4;s+=`<line x1="${L}" x2="${WW-R}" y1="${y(val)}" y2="${y(val)}" stroke="rgba(43,48,58,.08)"/><text x="${L-8}" y="${y(val)+4}" text-anchor="end" font-size="11" fill="#8a8e96">${money(val)}</text>`}
+  for(let i=0;i<wk;i++)s+=`<text x="${x(i)}" y="${H-B+18}" text-anchor="middle" font-size="11" fill="${i===5?'#1d1d1b':'#8a8e96'}" font-weight="${i===5?700:400}">W${String(i+1).padStart(2,'0')}</text>`;
+  s+=`<line x1="${L}" x2="${WW-R}" y1="${y(h.target)}" y2="${y(h.target)}" stroke="#c93c3c" stroke-width="2" stroke-dasharray="6 4"/><text x="${WW-R}" y="${y(h.target)-6}" text-anchor="end" font-size="11.5" fill="#c93c3c">Target ${money(h.target)}</text>`;
+  const path=(arr,c,w)=>`<polyline fill="none" stroke="${c}" stroke-width="${w}" points="${arr.map((val,i)=>x(i)+','+y(val)).join(' ')}"/>`+arr.map((val,i)=>`<circle cx="${x(i)}" cy="${y(val)}" r="${i===5?5:3.5}" fill="${c}"/>`).join('');
+  s+=path(h.closed,'#00808a',2.5)+path(h.calls,'#1d1d1b',3);
+  s+=`<text x="${x(5)+8}" y="${y(h.calls[5])-8}" font-size="12" font-weight="700" fill="#1d1d1b">${money(h.calls[5])}</text>`;
+  s+=`<rect x="${x(5)+14}" y="${T}" width="${WW-R-x(5)-14}" height="${H-T-B}" fill="rgba(43,48,58,.03)"/><text x="${(x(5)+WW-R)/2}" y="${T+18}" text-anchor="middle" font-size="12" fill="#8a8e96">future weeks · filled each Friday by the snapshot</text>`;
+  s+='</svg></div>';
+  const rows=[...Object.entries(PILLARS).map(([k,P])=>[P.name,history(P.units)]),['Total DXR',history(ALLK)]];
+  return`
+  <div class="hero"><div><h1>Call trend across the quarter</h1><p>Each point is a locked Friday snapshot. W01–W04 are illustrative in this mock-up, W05 is last Friday's snapshot and W06 is live.</p></div></div>
+  <div class="chips">${['ALL','AM','BD','CA'].map(s=>`<button class="chip ${S.trendScope===s?'on':''}" data-tscope="${s}">${scopeName(s)}</button>`).join('')}</div>
+  <div class="card"><h2>${scopeName(S.trendScope)} · manager call vs closed · ${mLabel()}</h2>${s}
+   <div class="legend"><span><i style="background:#1d1d1b"></i>Manager call</span><span><i style="background:#00808a"></i>Closed won to date</span><span><i style="background:#c93c3c"></i>Target</span></div></div>
+  <div class="grid two" style="margin-top:14px">
+   <div class="card"><h2>Call by week</h2><div class="scroll"><table><thead><tr><th>Pillar</th>${[1,2,3,4,5,6].map(i=>`<th class="r">W0${i}</th>`).join('')}<th class="r">Δ W01→W06</th></tr></thead><tbody>
+   ${rows.map(([n,h])=>`<tr class="${n==='Total DXR'?'tot':''}"><td>${n}</td>${h.calls.map(c=>`<td class="r num">${money(c)}</td>`).join('')}<td class="r num ${dcls(h.calls[5]-h.calls[0])}">${sgn(h.calls[5]-h.calls[0])}</td></tr>`).join('')}</tbody></table></div></div>
+   <div class="card"><h2>Forecast accuracy</h2><div class="sub">Available after the first full quarter of snapshots (from FY27 Q2).</div>
+    <div class="note-box">At quarter end the tool compares <b>each Friday's manager call</b> with <b>actual Closed Won</b>, by pillar and manager:<ul class="tight"><li>Accuracy at W04, W08 and W12 (how early the number was right)</li><li>Rep call vs manager call (whose judgement was closer)</li><li>Slip rate: % of Commit £ pushed out of the quarter</li><li>Commit conversion: % of W06 Commit that closed</li></ul></div></div>
+  </div>`;
+}
+
+function viewRhythm(){
+  const t=totals(ALLK);
+  return`
+  <div class="hero"><div><h1>The Friday rhythm</h1><p>One working week, one meeting, one snapshot. Reps keep working in Opportunity as normal. The forecast reads it live and freezes it after the meeting.</p></div></div>
+  <div class="steps">
+   <div class="step"><div class="when">Sat (auto)</div><h3>Week opens</h3><p>W07 is created and lines are cloned from W06. Manager categories and notes carry forward, so managers only re-judge what changed.</p></div>
+   <div class="step"><div class="when">Mon – Wed</div><h3>Reps update deals</h3><p>Stage, close date, amount and next step on the Opportunity. The cockpit syncs on load and also runs nightly. No Opportunity trigger is added.</p></div>
+   <div class="step"><div class="when">Thu by 17:00</div><h3>Managers submit</h3><p>Set the manager category, add notes, a signed adjustment with a reason, and risks and upside. Then click Submit.</p></div>
+   <div class="step ${S.locked?'':'now'}"><div class="when">Fri 10:00</div><h3>Forecast meeting</h3><p>The CCO runs it from the roll-up, then drills into each pillar and walks the variance bridge. Calls changed in the meeting are made live.</p></div>
+   <div class="step ${S.locked?'now':''}"><div class="when">Fri after meeting</div><h3>Lock &amp; snapshot</h3><p>A final sync, then movement and variance against the prior line. Lines, submissions and targets are frozen. Auto-lock runs at 18:00 if this is missed.</p></div>
+  </div>
+  <div class="grid half" style="margin-top:14px">
+   <div class="card"><h2>This week</h2><div class="sub">${Q.label} · W06 · w/e Fri 11 Dec 2026</div>
+    <table><tbody>${UNITS.map(u=>`<tr><td>${u.name}</td><td>${u.mgr}</td><td>${statusBadge(u)}</td></tr>`).join('')}
+    <tr><td>Lines in scope</td><td colspan="2" class="num">${t.lines}</td></tr><tr><td>Manager call</td><td colspan="2" class="num"><b>${money(t.call)}</b> (${mLabel()})</td></tr></tbody></table>
+    <div class="lockbar" style="margin-top:14px">${live()?(S.locked?`<span class="badge locked">Locked ${S.lockedAt}</span><span class="muted">W07 is open with carry-forward.</span>`:`<button class="btn dark" data-lock="1">Lock &amp; snapshot W06</button><span class="muted" style="font-size:12.5px">CCO / RevOps only (DXR_Forecast_Admin)</span>`):'<span class="muted">Switch to W06.</span>'}</div></div>
+   <div class="card dark"><h2>What a snapshot stores</h2><ul class="tight" style="color:#cfd1d5;font-size:13.5px">
+    <li><b style="color:#fff">1 Forecast_Week__c</b>: status Locked, who and when, Manual or Auto</li>
+    <li><b style="color:#fff">4 Forecast_Submission__c</b>: target, closed, commit, best case, pipeline, adjustment, call, prior call, commentary</li>
+    <li><b style="color:#fff">${t.lines} Forecast_Line__c</b>: per deal: stage, rep category, manager category, close date, GP and revenue, next step, note, prior values, movement, call variance</li>
+    <li>The owner's <b style="color:#fff">pillar is stamped</b>, so a later re-org never rewrites history</li>
+    <li>Both measures are stored, so the GP / Revenue toggle works on history too</li></ul></div>
+  </div>`;
+}
+
+function viewBuild(){
+  return`
+  <div class="hero"><div><h1>How it's built</h1><p>Three custom objects, one LWC cockpit on a Lightning App Page, Apex for sync and lock, and standard reports on the snapshots. Full spec: <b>XYP-FCST-001</b>.</p></div></div>
+  <div class="grid half">
+   <div class="card"><h2>Data model</h2><div class="sub">Week → Submission → Line (master-detail). Lines look up to Opportunity, so deleting a deal never deletes history.</div>
+    <div class="obj"><div class="h">Forecast_Week__c<span>1 per Friday</span></div><ul><li><code>Week_Ending__c</code>, <code>Week_Number__c</code>, quarter start/end</li><li><code>Status__c</code> Open · Locked · <code>Locked_At__c</code> / <code>Locked_By__c</code> / <code>Lock_Method__c</code></li><li><code>Prior_Week__c</code> · <code>Meeting_Notes__c</code></li></ul></div>
+    <div class="arrow">▼ master-detail</div>
+    <div class="obj"><div class="h">Forecast_Submission__c<span>1 per unit per week</span></div><ul><li><code>Pillar__c</code>, <code>Forecast_Unit__c</code>, <code>Manager__c</code>, <code>Status__c</code></li><li>Rollups: Closed / Commit / Best Case / Pipeline / Rep Commit (GP + Rev)</li><li><code>Manager_Adjustment_GP__c</code> + reason · <code>Manager_Call_GP__c</code> · <code>Prior_Call_GP__c</code> · <code>Call_Variance_GP__c</code></li><li><code>Key_Risks__c</code> / <code>Key_Upside__c</code></li></ul></div>
+    <div class="arrow">▼ master-detail</div>
+    <div class="obj"><div class="h">Forecast_Line__c<span>1 per deal per week</span></div><ul><li><code>Opportunity__c</code> (lookup) · Owner · stamped <code>Pillar__c</code></li><li><code>Rep_Category__c</code> (from the opp) vs <code>Manager_Category__c</code> (judgement)</li><li>Stage, close, <code>GP_In_Year__c</code>, <code>Revenue__c</code>, next step, note</li><li><code>Prior_Line__c</code> + Prior_* values · <code>Movement__c</code> · <code>Call_Variance_GP__c</code></li></ul></div>
+   </div>
+   <div class="grid" style="align-content:start">
+    <div class="card"><h2>Forecast hierarchy: new commercial structure</h2><div class="sub">Comes from <code>User.Forecast_Pillar__c</code> / <code>Forecast_Unit__c</code>, loaded once from the new structure at cutover. Roles are not used. A future re-org is a data change, not a rebuild.</div>
+     <div class="tree"><div class="p">Chief Commercial Officer <span class="muted" style="font-weight:400">· reviews &amp; locks</span></div>
+     ${Object.entries(PILLARS).map(([k,P])=>`<div class="p">${P.name}</div>${P.units.map(u=>`<div class="u">${UNIT[u].mgr} <span>· ${UNIT[u].reps.length} reps · submits</span></div>`).join('')}`).join('')}
+     <div class="p dim" style="font-weight:500">Sales Enablement / Bid · Pre-sales · Marketing: not forecast (phase 1)</div></div></div>
+    <div class="card"><h2>Components</h2><ul class="tight" style="font-size:13.5px">
+     <li><b>LWC</b>: <code>dxrForecastCockpit</code> (container), <code>…Header</code>, <code>…Rollup</code>, <code>…Unit</code>, <code>…DealGrid</code> (inline-edit datatable), <code>…Bridge</code>, <code>…Trend</code>, <code>…LockModal</code></li>
+     <li><b>Apex</b>: <code>ForecastController</code>, <code>ForecastSyncService</code>, <code>ForecastLockService</code> (Queueable), <code>ForecastMovement</code>, auto-lock (Fri 18:00) + nightly sync schedulers</li>
+     <li><b>Security</b>: <code>DXR_Forecast_Manager</code>, <code>DXR_Forecast_Admin</code> (+ unlock custom permission). VRs block edits once locked.</li>
+     <li><b>Reports</b>: call trend, variance by movement, slipped deals, judgement delta, accuracy · <b>DXR Weekly Forecast</b> dashboard</li></ul></div>
+    <div class="card"><h2>Open decisions for DXR</h2><ol class="tight" style="font-size:13.5px">
+     <li>Pillar by <b>deal owner</b> (recommended, no double count) or by deal source?</li>
+     <li>Primary measure: <b>GP in Year</b> (matches targets) or Revenue?</li>
+     <li>Who can lock: CCO only, or CCO + RevOps? Is 18:00 right for the auto-lock?</li>
+     <li>Go-live date of the new commercial structure, and the final roster</li>
+     <li>Can managers see each other's units before the meeting?</li>
+     <li>Renewals in the forecast (627 of 827 open DXR deals) or in a separate view?</li></ol></div>
+   </div>
+  </div>`;
+}
+
+/* ---------- lock modal ---------- */
+function openLock(){
+  const t=totals(ALLK),pending=UNITS.filter(u=>u.status!=='Submitted');
+  document.getElementById('modalHost').innerHTML=`<div class="scrim" id="scrim"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="lk">
+   <h2 id="lk">Lock W06 and take the snapshot?</h2><p class="muted" style="margin:0 0 12px">This freezes every line and submission for w/e Fri 11 Dec and opens W07 with manager categories and notes carried forward.</p>
+   ${UNITS.map(u=>`<div class="row"><span>${u.name}</span>${statusBadge(u)}</div>`).join('')}
+   <div class="row"><span>Lines to snapshot</span><b class="num">${t.lines}</b></div>
+   <div class="row"><span>Manager call (${mLabel()})</span><b class="num">${money(t.call)}</b></div>
+   ${pending.length?`<div class="note-box" style="margin-top:12px;background:#fff3dc;color:var(--warn)"><b style="color:var(--warn)">${pending.map(u=>u.mgr).join(', ')}</b> has not submitted. Locking now snapshots their current working lines as they stand.</div>`:''}
+   <div class="acts"><button class="btn ghost" id="cancelLock">Cancel</button><button class="btn dark" id="confirmLock">Lock &amp; snapshot</button></div></div></div>`;
+  document.getElementById('cancelLock').onclick=closeModal;
+  document.getElementById('scrim').onclick=e=>{if(e.target.id==='scrim')closeModal()};
+  document.getElementById('confirmLock').onclick=()=>{S.locked=true;S.lockedAt='Fri 11 Dec 11:47';closeModal();render();toast(`Snapshot saved: <b>${t.lines} lines</b> · 4 submissions · W07 opened`)};
+}
+function closeModal(){document.getElementById('modalHost').innerHTML=''}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});
+let tt;function toast(h){const el=document.getElementById('toast');el.innerHTML=h;el.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>el.classList.remove('show'),3200)}
+
+/* ---------- render + events ---------- */
+function render(){
+  renderHeader();
+  const app=document.getElementById('app');
+  app.innerHTML=({cockpit:viewCockpit,unit:viewUnit,variance:viewVariance,trend:viewTrend,rhythm:viewRhythm,build:viewBuild})[S.view]();
+}
+const app=document.getElementById('app');
+app.addEventListener('click',e=>{
+  const el=e.target.closest('[data-unit],[data-filter],[data-scope],[data-mf],[data-tscope],[data-go],[data-lock],#submitBtn');if(!el)return;
+  if(el.dataset.unit){S.unit=el.dataset.unit;S.view='unit';S.filter='quarter';render();if(e.target.closest('tr'))window.scrollTo({top:0});return}
+  if(el.dataset.filter){S.filter=el.dataset.filter;render();return}
+  if(el.dataset.scope){S.scope=el.dataset.scope;S.moveFilter=null;render();return}
+  if(el.dataset.mf!==undefined){S.moveFilter=el.dataset.mf&&S.moveFilter!==el.dataset.mf?el.dataset.mf:null;render();return}
+  if(el.dataset.tscope){S.trendScope=el.dataset.tscope;render();return}
+  if(el.dataset.go){S.view=el.dataset.go;render();window.scrollTo({top:0});return}
+  if(el.dataset.lock){openLock();return}
+  if(el.id==='submitBtn'){const u=UNIT[S.unit];
+    const a=+document.getElementById('adj').value||0,r=document.getElementById('adjR').value.trim();
+    if(a!==0&&!r){toast('An adjustment needs a reason (VR-F2)');document.getElementById('adjR').focus();return}
+    u.adj.cur=S.measure==='gp'?a:Math.round(a*0.45);u.adj.reason=r;u.risks=document.getElementById('risks').value;u.upside=document.getElementById('upside').value;
+    u.status='Submitted';u.subAt='Fri 09:31';render();toast(`<b>${u.name}</b> submitted · call ${money(totals([u.key]).call)}`)}
+});
+app.addEventListener('change',e=>{
+  const m=e.target.dataset.mgr;if(m){const d=DEALS.find(x=>x.id===m);d.cur.mgr=e.target.value;const y=window.scrollY;render();window.scrollTo({top:y});toast(`Manager category → <b>${e.target.value==='Omitted'?'Omit':e.target.value}</b> · ${esc(d.acct)}`)}
+  if(e.target.id==='adj'){const u=UNIT[S.unit],a=+e.target.value||0;u.adj.cur=S.measure==='gp'?a:Math.round(a*0.45);const y=window.scrollY;render();window.scrollTo({top:y})}
+});
+app.addEventListener('input',e=>{const n=e.target.dataset.note;if(n){DEALS.find(x=>x.id===n).note=e.target.value}});
+render();
+</script>
+</body>
+</html>
