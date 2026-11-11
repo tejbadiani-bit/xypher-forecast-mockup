@@ -149,6 +149,8 @@ ul.tight li{margin:3px 0}
 #toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(30px);background:var(--ink);color:#fff;padding:11px 18px;border-radius:999px;font-weight:600;font-size:13.5px;opacity:0;transition:.25s;z-index:60;pointer-events:none;max-width:92vw;text-align:center}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 #toast b{color:var(--lime)}
+.rt-dot{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:7px;vertical-align:baseline}
+.rsteps{grid-template-columns:repeat(4,1fr)}@media (max-width:820px){.rsteps{grid-template-columns:1fr 1fr}}
 svg text{font-family:"Instrument Sans",system-ui,sans-serif}
 @media (max-width:640px){main{padding:16px 16px 60px}h1{font-size:24px}.top-in{padding:10px 16px}.ctrls{margin-left:0}}
 </style>
@@ -164,7 +166,7 @@ svg text{font-family:"Instrument Sans",system-ui,sans-serif}
     <button class="btn dark" id="lockBtn">Lock &amp; snapshot</button>
   </div>
 </div></header>
-<div class="banner">Concept mock-up of a Salesforce LWC · <b>fictional accounts and figures</b> · names abbreviated · revenue = first 12 months of contract value · built on the new commercial structure · design ref XYP-FCST-001</div>
+<div class="banner">Concept mock-up of a Salesforce LWC · <b>fictional accounts and figures</b> · names abbreviated · DXR Cyber financial year April–March (FY27 = Apr 2026–Mar 2027) · bookings → revenue via the revenue schedule · design ref XYP-FCST-001</div>
 <main id="app"></main>
 <div id="modalHost"></div>
 <div id="toast"></div>
@@ -181,7 +183,7 @@ const dayDiff=(a,b)=>Math.round((new Date(b+'T00:00:00Z')-new Date(a+'T00:00:00Z
 const randDate=(a,b)=>addDays(a,ri(0,dayDiff(a,b)));
 const fmtDate=s=>new Date(s+'T00:00:00Z').toLocaleDateString('en-GB',{day:'numeric',month:'short',timeZone:'UTC'});
 
-const Q={label:'FY27 Q1',start:'2026-11-01',end:'2027-01-31',weeks:13,week:6,fri:'2026-12-11',prevFri:'2026-12-04'};
+const Q={label:'FY27 Q3',start:'2026-10-01',end:'2026-12-31',weeks:13,week:11,fri:'2026-12-11',prevFri:'2026-12-04'};
 const PILLARS={
   AM:{name:'Account Management',short:'AM',units:['am-st','am-ht']},
   BD:{name:'Business Development',short:'BD',units:['bd']},
@@ -221,11 +223,11 @@ function mk(u,rep,closed){
   const rev=Math.round(gp/margin/100)*100;
   const st={exists:true,stage:'',cat:'',mgr:'',close:'',gp,rev,tcv:Math.round(rev*term/12/100)*100};
   const d={id:'OPP-'+(24000+id++),unit:u.key,pillar:p,owner:rep,acct:acct(),product,term,basis:rnd()<.3?'Quote':'Estimated',type,partner:p==='CA'?pick(PARTNERS):(rnd()<.08?pick(PARTNERS):''),next:pick(NEXT),note:'',margin,cur:st,prior:null};
-  if(closed){st.gp=Math.round(st.gp*.85/50)*50;st.rev=Math.round(st.gp/margin/100)*100;st.tcv=Math.round(st.rev*term/12/100)*100;st.stage='Closed Won';st.close=randDate('2026-11-03','2026-12-03');}
+  if(closed){st.gp=Math.round(st.gp*.85/50)*50;st.rev=Math.round(st.gp/margin/100)*100;st.tcv=Math.round(st.rev*term/12/100)*100;st.stage='Closed Won';st.close=randDate('2026-10-05','2026-12-03');}
   else{
     st.stage=STAGES[pick([0,1,1,2,2,3,3,3])];
     const r=rnd();
-    st.close=r<.05?randDate('2026-12-01','2026-12-10'):r<.85?randDate('2026-12-14','2027-01-29'):randDate('2027-02-02','2027-04-20');
+    st.close=r<.05?randDate('2026-12-01','2026-12-10'):r<.8?randDate('2026-12-14','2026-12-31'):randDate('2027-01-08','2027-03-26');
   }
   d.prior={...st};
   DEALS.push(d);return d;
@@ -242,11 +244,11 @@ DEALS.forEach(d=>{
   if(r<.07){p.exists=false}
   else if(r<.16&&idx>=1){p.stage=STAGES[idx-1]}
   else if(r<.20&&idx<=2){p.stage=STAGES[idx+1]}
-  else if(r<.225){p.close=randDate('2026-12-14','2027-01-25');c.close=randDate('2027-02-03','2027-03-20');if(idx<2){c.stage=p.stage=STAGES[2]}}
-  else if(r<.255){c.close=randDate('2026-12-15','2027-01-28');p.close=randDate('2027-02-05','2027-03-15')}
+  else if(r<.225){p.close=randDate('2026-12-14','2026-12-31');c.close=randDate('2027-01-08','2027-03-20');if(idx<2){c.stage=p.stage=STAGES[2]}}
+  else if(r<.255){c.close=randDate('2026-12-15','2026-12-31');p.close=randDate('2027-01-08','2027-03-15')}
   else if(r<.315){p.gp=Math.round(c.gp*(rnd()<.5?0.72+rnd()*.15:1.15+rnd()*.3)/50)*50;p.rev=Math.round(p.gp/d.margin/100)*100;p.tcv=Math.round(p.rev*d.term/12/100)*100}
   else if(r<.375){p.stage=STAGES[3];c.stage='Closed Won';if(c.close>Q.end||c.close<'2026-12-05')p.close=randDate('2026-12-14','2026-12-31');c.close=randDate('2026-12-07','2026-12-10')}
-  else if(r<.39){p.stage=STAGES[pick([2,3])];c.stage='Closed Lost';if(c.close>Q.end)p.close=randDate('2026-12-14','2027-01-20');c.close='2026-12-09'}
+  else if(r<.39){p.stage=STAGES[pick([2,3])];c.stage='Closed Lost';if(c.close>Q.end)p.close=randDate('2026-12-14','2026-12-31');c.close='2026-12-09'}
 });
 DEALS.forEach(d=>{
   const c=d.cur,p=d.prior;c.cat=CAT[c.stage];p.cat=CAT[p.stage];c.mgr=c.cat;p.mgr=p.cat;
@@ -258,7 +260,7 @@ DEALS.forEach(d=>{
 });
 
 /* ---------- state + maths ---------- */
-const S={view:'cockpit',unit:'am-st',measure:'rev',week:6,locked:false,lockedAt:null,filter:'quarter',scope:'ALL',moveFilter:null,trendScope:'ALL'};
+const S={view:'cockpit',unit:'am-st',measure:'rev',week:6,locked:false,lockedAt:null,filter:'quarter',scope:'ALL',moveFilter:null,trendScope:'ALL',rscen:'call'};
 const live=()=>S.week===6;
 const editable=()=>live()&&!S.locked;
 const W=()=>live()?'cur':'prior';
@@ -330,11 +332,11 @@ const catCls=c=>c.split(' ')[0];
 const mLabel=()=>S.measure==='gp'?'GP in Year':'Revenue in Year';
 
 /* ---------- header ---------- */
-const VIEWS=[['cockpit','CCO roll-up'],['unit','Pillar & team'],['variance','Week-on-week variance'],['trend','Trend & accuracy'],['rhythm','Friday rhythm'],['build','How it’s built']];
+const VIEWS=[['cockpit','CCO roll-up'],['revenue','Bookings → revenue'],['unit','Pillar & team'],['variance','Week-on-week variance'],['trend','Trend & accuracy'],['rhythm','Friday rhythm'],['build','How it’s built']];
 function renderHeader(){
   document.getElementById('nav').innerHTML=VIEWS.map(([k,l])=>`<button data-v="${k}" class="${S.view===k?'on':''}">${l}</button>`).join('');
   const ws=document.getElementById('weekSel');
-  ws.innerHTML=`<option value="6">${Q.label} · W06 · w/e Fri 11 Dec${S.locked?' (locked)':' (open)'}</option><option value="5">${Q.label} · W05 · w/e Fri 4 Dec (locked)</option>`+(S.locked?`<option value="7" disabled>${Q.label} · W07 · w/e Fri 18 Dec (open, carried forward)</option>`:'');
+  ws.innerHTML=`<option value="6">${Q.label} · W11 · w/e Fri 11 Dec${S.locked?' (locked)':' (open)'}</option><option value="5">${Q.label} · W10 · w/e Fri 4 Dec (locked)</option>`+(S.locked?`<option value="7" disabled>${Q.label} · W12 · w/e Fri 18 Dec (open, carried forward)</option>`:'');
   ws.value=String(S.week);
   document.querySelectorAll('#measureSeg button').forEach(b=>b.classList.toggle('on',b.dataset.m===S.measure));
   const lockedView=!live()||S.locked;
@@ -345,11 +347,11 @@ function renderHeader(){
 document.getElementById('nav').addEventListener('click',e=>{const b=e.target.closest('button');if(b){S.view=b.dataset.v;render();window.scrollTo({top:0})}});
 document.getElementById('weekSel').addEventListener('change',e=>{S.week=+e.target.value;render()});
 document.getElementById('measureSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(b){S.measure=b.dataset.m;render()}});
-document.getElementById('lockBtn').addEventListener('click',()=>{if(S.locked){S.locked=false;S.lockedAt=null;toast('W06 reopened by admin. The unlock is logged in Meeting Notes.');render()}else openLock()});
+document.getElementById('lockBtn').addEventListener('click',()=>{if(S.locked){S.locked=false;S.lockedAt=null;toast('W11 reopened by admin. The unlock is logged in Meeting Notes.');render()}else openLock()});
 
 /* ---------- views ---------- */
 function kpi(l,val,d,hl){return`<div class="card kpi${hl?' hl':''}"><div class="l">${l}</div><div class="v">${val}</div><div class="d">${d||'&nbsp;'}</div></div>`}
-function deltaTxt(keys){if(!live())return'vs W04 (not in mock-up)';const d=totals(keys,'cur').call-totals(keys,'prior').call;return`<span class="${dcls(d)}">${sgn(d)}</span> vs last Friday`}
+function deltaTxt(keys){if(!live())return'vs W09 (not in mock-up)';const d=totals(keys,'cur').call-totals(keys,'prior').call;return`<span class="${dcls(d)}">${sgn(d)}</span> vs last Friday`}
 function statusBadge(u){
   if(S.locked||!live())return`<span class="badge locked">Locked</span>`;
   return u.status==='Submitted'?`<span class="badge open">Submitted ${u.subAt||''}</span>`:`<span class="badge warn">${u.status}</span>`;
@@ -366,11 +368,11 @@ function viewCockpit(){
   const br=live()?bridge(ALLK):null;
   const top=br?br.movers.filter(m=>m.k!=='Won').sort((a,b)=>Math.abs(b.x)-Math.abs(a.x)).slice(0,6):[];
   return`
-  <div class="hero"><div><h1>Friday forecast · ${Q.label}, week ${live()?6:5} of 13</h1>
-    <p>${live()?(S.locked?`Locked ${S.lockedAt}. This is the frozen snapshot. W07 has opened with manager categories and notes carried forward.`:`Meeting Fri 11 Dec, 10:00. <b>${sub} of 4</b> submissions are in. Click a pillar to drill into its team and deals.`):'Viewing last Friday\'s locked snapshot (W05). Read-only.'}</p></div>
+  <div class="hero"><div><h1>Friday forecast · ${Q.label}, week ${live()?11:10} of 13</h1>
+    <p>${live()?(S.locked?`Locked ${S.lockedAt}. This is the frozen snapshot. W12 has opened with manager categories and notes carried forward.`:`Meeting Fri 11 Dec, 10:00. <b>${sub} of 4</b> submissions are in. Click a pillar to drill into its team and deals.`):'Viewing last Friday\'s locked snapshot (W10). Read-only.'}</p></div>
     <div class="legend"><span>Measure: <b>${mLabel()}</b></span><span>Call = Closed + manager Commit + adjustment</span></div></div>
   <div class="grid kpis">
-    ${kpi('Quarter target',money(t.target),'Rep_Target__c, Nov–Jan')}
+    ${kpi('Quarter target',money(t.target),'Rep_Target__c, Oct–Dec')}
     ${kpi('Closed won',money(t.closed),pct(t.closed/t.target)+' of target')}
     ${kpi('Manager call',money(t.call),deltaTxt(ALLK),true)}
     ${kpi('Gap to target',money(t.gap),pct(t.pct)+' of target called')}
@@ -385,7 +387,7 @@ function viewCockpit(){
   <div class="grid two" style="margin-top:14px">
     <div class="card"><h2>Target vs call</h2><div class="sub">Closed + Commit (+ adjustment) is the call. Best Case shows the upside on top.</div>${barsSvg()}
       <div class="legend"><span><i style="background:var(--ink)"></i>Closed</span><span><i style="background:var(--lime)"></i>Commit + adj.</span><span><i style="background:var(--cyan-f)"></i>Best Case</span><span><i style="background:var(--bad)"></i>Target</span></div></div>
-    <div class="card"><h2>Biggest call movers since last Friday</h2><div class="sub">${live()?'From the line-level comparison with the W05 snapshot.':'Switch to W06 to see movement.'}</div>
+    <div class="card"><h2>Biggest call movers since last Friday</h2><div class="sub">${live()?'From the line-level comparison with the W10 snapshot.':'Switch to W11 to see movement.'}</div>
       ${top.map(m=>`<div class="mover"><div><div class="a">${esc(m.d.acct)}</div><div class="b">${m.k} · ${esc(m.d.owner)} · ${PILLARS[m.d.pillar].short}</div></div><div class="v ${dcls(m.x)}">${sgn(m.x)}</div></div>`).join('')||'<div class="muted">—</div>'}
       ${br?`<div style="margin-top:10px"><button class="btn ghost" data-go="variance">Open the full bridge →</button></div>`:''}</div>
   </div>`;
@@ -465,14 +467,14 @@ function viewUnit(){
 }
 
 function viewVariance(){
-  if(!live())return`<div class="hero"><div><h1>Week-on-week variance</h1><p>Variance is calculated between consecutive locked snapshots. The mock-up models W05 → W06 only, so switch the week back to W06.</p></div></div>`;
+  if(!live())return`<div class="hero"><div><h1>Week-on-week variance</h1><p>Variance is calculated between consecutive locked snapshots. The mock-up models W10 → W11 only, so switch the week back to W11.</p></div></div>`;
   const keys=scopeKeys(S.scope),br=bridge(keys);
   const sum=br.start+Object.values(br.b).reduce((a,b)=>a+b,0);
   const ok=Math.abs(sum-br.end)<1;
   const mv=br.movers.filter(m=>!S.moveFilter||m.k===S.moveFilter).sort((a,b)=>Math.abs(b.x||b.conv)-Math.abs(a.x||a.conv));
   const pRows=Object.entries(PILLARS).map(([k,P])=>{const b=bridge(P.units);return`<tr><td><b>${P.name}</b></td><td class="r num">${money(b.start)}</td>${BR_ORDER.map(o=>`<td class="r num ${b.b[o]?dcls(b.b[o]):'dim'}">${b.b[o]?sgn(b.b[o]):'–'}</td>`).join('')}<td class="r num"><b>${money(b.end)}</b></td></tr>`}).join('');
   return`
-  <div class="hero"><div><h1>What changed since last Friday</h1><p>Bridge from the W05 locked call (Fri 4 Dec) to this week's call. Every pound is explained by a deal-level movement or by a change in the manager adjustment.</p></div>
+  <div class="hero"><div><h1>What changed since last Friday</h1><p>Bridge from the W10 locked call (Fri 4 Dec) to this week's call. Every pound is explained by a deal-level movement or by a change in the manager adjustment.</p></div>
   <span class="badge ${ok?'open':'warn'}">${ok?'✓ Bridge reconciles':'Bridge does not reconcile'}</span></div>
   <div class="chips">${['ALL','AM','BD','CA',...ALLK.slice(0,2)].map(s=>`<button class="chip ${S.scope===s?'on':''}" data-scope="${s}">${s==='ALL'?'All pillars':PILLARS[s]?PILLARS[s].name:UNIT[s].name}</button>`).join('')}</div>
   <div class="card"><h2>${scopeName(S.scope)} · ${mLabel()}</h2><div class="sub">Click a bar to filter the movers below. ${br.won?`<b>${money(br.won)}</b> converted from Commit to Closed Won this week (no change to the call).`:''}</div>
@@ -488,7 +490,7 @@ function viewVariance(){
       <li><b style="color:#fff">Upgraded</b>: moved into Commit from Best Case or Pipeline (including deals won from upside).</li>
       <li><b style="color:#fff">Amount ↑ / ↓</b>: in the call both weeks, but the value changed.</li>
       <li><b style="color:#fff">Downgraded</b>: moved out of Commit.</li>
-      <li><b style="color:#fff">Pushed out</b>: close date moved beyond 31 Jan.</li>
+      <li><b style="color:#fff">Pushed out</b>: close date moved beyond 31 Dec.</li>
       <li><b style="color:#fff">Lost</b>: was in the call, now Closed Lost.</li>
       <li><b style="color:#fff">Adjustment</b>: change in the managers' signed adjustment.</li></ul>
       <p style="font-size:13px;color:#b9bcc2;margin:12px 0 0">Identity tested at lock (T6): last call + Σ movements = this call.</p></div>
@@ -516,10 +518,10 @@ function waterfall(br){
 }
 
 function history(keys){
-  // W01–W04 synthesised; W05 = locked prior; W06 = live
-  const w5=totals(keys,'prior'),w6=totals(keys,'cur');const f=[.84,.88,.93,.97];
+  // W01–W09 synthesised; W10 = locked prior; W11 = live
+  const w5=totals(keys,'prior'),w6=totals(keys,'cur');const f=[.70,.74,.79,.82,.84,.88,.91,.93,.97];
   const calls=f.map((x,i)=>Math.round(w5.call*x+(i%2?1:-1)*w5.target*.01));calls.push(w5.call);calls.push(w6.call);
-  const closed=[.18,.35,.55,.78].map(x=>Math.round(w5.closed*x));closed.push(w5.closed);closed.push(w6.closed);
+  const closed=[.05,.12,.2,.28,.36,.45,.55,.66,.78].map(x=>Math.round(w5.closed*x));closed.push(w5.closed);closed.push(w6.closed);
   return{calls,closed,target:w6.target};
 }
 function viewTrend(){
@@ -528,25 +530,129 @@ function viewTrend(){
   const max=Math.max(h.target,...h.calls)*1.1;const x=i=>L+i*(WW-L-R)/(wk-1),y=val=>T+(1-val/max)*(H-T-B);
   let s=`<div class="scroll"><svg viewBox="0 0 ${WW} ${H}" width="100%" style="min-width:600px" role="img" aria-label="Call trend by week">`;
   for(let g=0;g<=4;g++){const val=max*g/4;s+=`<line x1="${L}" x2="${WW-R}" y1="${y(val)}" y2="${y(val)}" stroke="rgba(43,48,58,.08)"/><text x="${L-8}" y="${y(val)+4}" text-anchor="end" font-size="11" fill="#8a8e96">${money(val)}</text>`}
-  for(let i=0;i<wk;i++)s+=`<text x="${x(i)}" y="${H-B+18}" text-anchor="middle" font-size="11" fill="${i===5?'#1d1d1b':'#8a8e96'}" font-weight="${i===5?700:400}">W${String(i+1).padStart(2,'0')}</text>`;
+  for(let i=0;i<wk;i++)s+=`<text x="${x(i)}" y="${H-B+18}" text-anchor="middle" font-size="11" fill="${i===10?'#1d1d1b':'#8a8e96'}" font-weight="${i===10?700:400}">W${String(i+1).padStart(2,'0')}</text>`;
   s+=`<line x1="${L}" x2="${WW-R}" y1="${y(h.target)}" y2="${y(h.target)}" stroke="#c93c3c" stroke-width="2" stroke-dasharray="6 4"/><text x="${WW-R}" y="${y(h.target)-6}" text-anchor="end" font-size="11.5" fill="#c93c3c">Target ${money(h.target)}</text>`;
-  const path=(arr,c,w)=>`<polyline fill="none" stroke="${c}" stroke-width="${w}" points="${arr.map((val,i)=>x(i)+','+y(val)).join(' ')}"/>`+arr.map((val,i)=>`<circle cx="${x(i)}" cy="${y(val)}" r="${i===5?5:3.5}" fill="${c}"/>`).join('');
+  const path=(arr,c,w)=>`<polyline fill="none" stroke="${c}" stroke-width="${w}" points="${arr.map((val,i)=>x(i)+','+y(val)).join(' ')}"/>`+arr.map((val,i)=>`<circle cx="${x(i)}" cy="${y(val)}" r="${i===10?5:3.5}" fill="${c}"/>`).join('');
   s+=path(h.closed,'#00808a',2.5)+path(h.calls,'#1d1d1b',3);
-  s+=`<text x="${x(5)+8}" y="${y(h.calls[5])-8}" font-size="12" font-weight="700" fill="#1d1d1b">${money(h.calls[5])}</text>`;
-  s+=`<rect x="${x(5)+14}" y="${T}" width="${WW-R-x(5)-14}" height="${H-T-B}" fill="rgba(43,48,58,.03)"/><text x="${(x(5)+WW-R)/2}" y="${T+18}" text-anchor="middle" font-size="12" fill="#8a8e96">future weeks · filled each Friday by the snapshot</text>`;
+  s+=`<text x="${x(10)+8}" y="${y(h.calls[10])-8}" font-size="12" font-weight="700" fill="#1d1d1b">${money(h.calls[10])}</text>`;
+  s+=`<rect x="${x(10)+14}" y="${T}" width="${WW-R-x(10)-14}" height="${H-T-B}" fill="rgba(43,48,58,.03)"/><text x="${(x(10)+WW-R)/2}" y="${H-B-10}" text-anchor="middle" font-size="11" fill="#8a8e96">to come</text>`;
   s+='</svg></div>';
   const rows=[...Object.entries(PILLARS).map(([k,P])=>[P.name,history(P.units)]),['Total DXR',history(ALLK)]];
   return`
-  <div class="hero"><div><h1>Call trend across the quarter</h1><p>Each point is a locked Friday snapshot. W01–W04 are illustrative in this mock-up, W05 is last Friday's snapshot and W06 is live.</p></div></div>
+  <div class="hero"><div><h1>Call trend across the quarter</h1><p>Each point is a locked Friday snapshot. W01–W09 are illustrative in this mock-up, W10 is last Friday's snapshot and W11 is live.</p></div></div>
   <div class="chips">${['ALL','AM','BD','CA'].map(s=>`<button class="chip ${S.trendScope===s?'on':''}" data-tscope="${s}">${scopeName(s)}</button>`).join('')}</div>
   <div class="card"><h2>${scopeName(S.trendScope)} · manager call vs closed · ${mLabel()}</h2>${s}
    <div class="legend"><span><i style="background:#1d1d1b"></i>Manager call</span><span><i style="background:#00808a"></i>Closed won to date</span><span><i style="background:#c93c3c"></i>Target</span></div></div>
   <div class="grid two" style="margin-top:14px">
-   <div class="card"><h2>Call by week</h2><div class="scroll"><table><thead><tr><th>Pillar</th>${[1,2,3,4,5,6].map(i=>`<th class="r">W0${i}</th>`).join('')}<th class="r">Δ W01→W06</th></tr></thead><tbody>
-   ${rows.map(([n,h])=>`<tr class="${n==='Total DXR'?'tot':''}"><td>${n}</td>${h.calls.map(c=>`<td class="r num">${money(c)}</td>`).join('')}<td class="r num ${dcls(h.calls[5]-h.calls[0])}">${sgn(h.calls[5]-h.calls[0])}</td></tr>`).join('')}</tbody></table></div></div>
-   <div class="card"><h2>Forecast accuracy</h2><div class="sub">Available after the first full quarter of snapshots (from FY27 Q2).</div>
+   <div class="card"><h2>Call by week</h2><div class="scroll"><table><thead><tr><th>Pillar</th>${[6,7,8,9,10,11].map(i=>`<th class="r">W${String(i).padStart(2,'0')}</th>`).join('')}<th class="r">Δ W06→W11</th></tr></thead><tbody>
+   ${rows.map(([n,h])=>`<tr class="${n==='Total DXR'?'tot':''}"><td>${n}</td>${h.calls.slice(5).map(c=>`<td class="r num">${money(c)}</td>`).join('')}<td class="r num ${dcls(h.calls[10]-h.calls[5])}">${sgn(h.calls[10]-h.calls[5])}</td></tr>`).join('')}</tbody></table></div></div>
+   <div class="card"><h2>Forecast accuracy</h2><div class="sub">Available after the first full quarter of snapshots (from FY27 Q4).</div>
     <div class="note-box">At quarter end the tool compares <b>each Friday's manager call</b> with <b>actual Closed Won</b>, by pillar and manager:<ul class="tight"><li>Accuracy at W04, W08 and W12 (how early the number was right)</li><li>Rep call vs manager call (whose judgement was closer)</li><li>Slip rate: % of Commit £ pushed out of the quarter</li><li>Commit conversion: % of W06 Commit that closed</li></ul></div></div>
   </div>`;
+}
+
+
+/* ---------- bookings → revenue (revenue schedule) ---------- */
+const FYM=['2026-04','2026-05','2026-06','2026-07','2026-08','2026-09','2026-10','2026-11','2026-12','2027-01','2027-02','2027-03'];
+const MLAB=['Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar'];
+const NOWI=8; // Dec 2026 = month in progress; Apr–Nov are actuals
+const RT={
+  'Spread evenly':{c:'#1d1d1b',ex:'MDR / SOC, vulnerability management, vCISO and IR retainers, licences',how:'Annual value ÷ 12, every month of the term'},
+  'On delivery':{c:'#00808a',ex:'Pen tests, Cyber Essentials Plus, red team, readiness work, reviews',how:'All of it in the month the work is delivered'},
+  'Per occurrence':{c:'#7a5af8',ex:'Repeating work such as quarterly phishing simulations',how:'Split across each occurrence (here, quarterly)'},
+  'As used':{c:'#b7791f',ex:'Time & materials and consumption (drawdown) services',how:'When the hours or units are used'}
+};
+const rtype=p=>/MDR|Vulnerability|vCISO|Incident Response/.test(p)?'Spread evenly':/Phishing/.test(p)?'Per occurrence':'On delivery';
+// fictional base book (not DXR figures): earned actuals Apr–Nov, plus contracted revenue still to come
+const BASE_ACT=[688,712,701,742,729,768,781,796].map(x=>x*1000);
+const BASE_CON=[0,0,0,0,0,0,0,0,736,708,694,671].map(x=>x*1000);
+const FY_TARGET=9800000; // placeholder until DXR's FY27 targets are loaded
+const mIdx=d=>{const [y,m]=d.slice(0,7).split('-').map(Number);return (y-2026)*12+m-4}; // 0 = Apr 2026
+function schedule(d,st){
+  // returns {fy:[12], later:n} of revenue from one deal, starting the month after close
+  const out=new Array(12).fill(0);let later=0;const t=rtype(d.product),start=mIdx(st.close)+1;
+  const put=(i,x)=>{if(i<12)out[Math.max(i,0)]+=x;else later+=x};
+  if(t==='Spread evenly'){const mo=st.tcv/d.term;for(let k=0;k<d.term;k++)put(start+k,mo)}
+  else if(t==='Per occurrence'){const n=Math.max(1,Math.round(d.term/3)),x=st.tcv/n;for(let k=0;k<n;k++)put(start+k*3,x)}
+  else put(start,st.tcv);
+  return{fy:out,later,type:t};
+}
+function revModel(){
+  const cats=S.rscen==='bc'?['Commit','Best Case']:['Commit'];
+  const won=new Array(12).fill(0),call=new Array(12).fill(0),bc=new Array(12).fill(0);
+  const byType={},byPillar={},deals=[];let wonLater=0;
+  Object.keys(RT).forEach(k=>byType[k]={book:0,fy:0,later:0,n:0});
+  Object.keys(PILLARS).forEach(k=>byPillar[k]={book:0,fy:0,later:0});
+  DEALS.forEach(d=>{const st=d.cur;if(!st.exists||!inQ(st))return;
+    const isWon=st.mgr==='Closed',inScen=cats.includes(st.mgr);if(!isWon&&!inScen)return;
+    const r=schedule(d,st),fy=r.fy.reduce((a,b)=>a+b,0);
+    const tgt=isWon?won:st.mgr==='Best Case'?bc:call;r.fy.forEach((x,i)=>tgt[i]+=x);if(isWon)wonLater+=r.later;
+    if(!isWon){const T=byType[r.type],P=byPillar[d.pillar];T.book+=st.tcv;T.fy+=fy;T.later+=r.later;T.n++;P.book+=st.tcv;P.fy+=fy;P.later+=r.later;deals.push({d,st,fy,later:r.later,type:r.type})}
+  });
+  const act=FYM.map((m,i)=>i<NOWI?BASE_ACT[i]:0),con=FYM.map((m,i)=>i>=NOWI?BASE_CON[i]+won[i]:0);
+  // wins already delivered this quarter count as actuals in their month
+  for(let i=0;i<NOWI;i++)act[i]+=won[i];
+  const sum=a=>a.reduce((x,y)=>x+y,0);
+  const book=deals.reduce((a,x)=>a+x.st.tcv,0),fyCall=sum(call),fyBc=sum(bc),later=deals.reduce((a,x)=>a+x.later,0);
+  return{act,con,call,bc,byType,byPillar,deals,book,fyCall,fyBc,later,
+    A:sum(act),C:sum(con),landing:sum(act)+sum(con)+fyCall+fyBc};
+}
+function revChart(m){
+  const WW=980,H=320,L=64,R=16,T=24,B=44,n=12,bw=(WW-L-R)/n;
+  const tot=i=>m.act[i]+m.con[i]+m.call[i]+m.bc[i];
+  const max=Math.max(...FYM.map((_,i)=>tot(i)))*1.15;const y=v=>T+(1-v/max)*(H-T-B);
+  let s=`<div class="scroll"><svg viewBox="0 0 ${WW} ${H}" width="100%" style="min-width:680px" role="img" aria-label="FY27 revenue by month: actual, contracted and forecast">`;
+  for(let g=0;g<=4;g++){const v=max*g/4;s+=`<line x1="${L}" x2="${WW-R}" y1="${y(v)}" y2="${y(v)}" stroke="rgba(43,48,58,.08)"/><text x="${L-8}" y="${y(v)+4}" text-anchor="end" font-size="11" fill="#8a8e96">${money(v)}</text>`}
+  s+=`<rect x="${L+NOWI*bw}" y="${T}" width="${(n-NOWI)*bw}" height="${H-T-B}" fill="rgba(166,255,51,.07)"/><text x="${L+NOWI*bw+6}" y="${T+14}" font-size="11.5" fill="#3b7a00" font-weight="600">forecast →</text>`;
+  FYM.forEach((_,i)=>{const x=L+i*bw+bw*.18,w=bw*.64;let base=0;
+    [[m.act[i],'#1d1d1b'],[m.con[i],'#00808a'],[m.call[i],'#a6ff33'],[m.bc[i],'#9ff3f3']].forEach(([v,c])=>{if(!v)return;s+=`<rect x="${x}" y="${y(base+v)}" width="${w}" height="${y(base)-y(base+v)}" fill="${c}"/>`;base+=v});
+    s+=`<text x="${x+w/2}" y="${y(base)-6}" text-anchor="middle" font-size="11" font-weight="600" fill="#2b303a">${money(base)}</text>`;
+    s+=`<text x="${x+w/2}" y="${H-B+18}" text-anchor="middle" font-size="11.5" fill="${i===NOWI?'#1d1d1b':'#5d626c'}" font-weight="${i===NOWI?700:400}">${MLAB[i]}</text>`});
+  return s+'</svg></div>';
+}
+function viewRevenue(){
+  const m=revModel(),pctT=m.landing/FY_TARGET;
+  const typeRows=Object.entries(m.byType).map(([k,t])=>`<tr><td><span class="rt-dot" style="background:${RT[k].c}"></span><b>${k}</b><div class="dim" style="font-size:12px">${RT[k].ex}</div></td><td class="dim" style="font-size:12.5px">${RT[k].how}</td><td class="r num">${t.n}</td><td class="r num">${money(t.book)}</td><td class="r num"><b>${money(t.fy)}</b></td><td class="r num">${money(t.later)}</td><td class="r num">${t.book?pct(t.fy/t.book):'–'}</td></tr>`).join('');
+  const pRows=Object.entries(m.byPillar).map(([k,t])=>`<tr><td><b>${PILLARS[k].name}</b></td><td class="r num">${money(t.book)}</td><td class="r num"><b>${money(t.fy)}</b></td><td class="r num">${money(t.later)}</td><td class="r num">${t.book?pct(t.fy/t.book):'–'}</td></tr>`).join('');
+  const top=m.deals.slice().sort((a,b)=>b.st.tcv-a.st.tcv).slice(0,8).map(x=>`<tr><td class="deal"><b>${esc(x.d.acct)}</b><span>${esc(x.d.product)} · ${PILLARS[x.d.pillar].short}</span></td><td><span class="cat ${catCls(x.st.mgr)}">${x.st.mgr}</span></td><td class="num">${fmtDate(x.st.close)}</td><td><span class="rt-dot" style="background:${RT[x.type].c}"></span>${x.type}</td><td class="r num">${x.d.term} mo</td><td class="r num">${money(x.st.tcv)}</td><td class="r num"><b>${money(x.fy)}</b></td><td class="r num">${money(x.later)}</td></tr>`).join('');
+  const scen=S.rscen==='bc'?'Commit + Best Case':'Commit (the manager call)';
+  return`
+  <div class="hero"><div><h1>From the bookings call to a revenue forecast</h1>
+    <p>Sales forecast <b>bookings</b> every Friday. Each deal's products carry a <b>revenue type</b>, so the revenue schedule turns those bookings into the months the revenue is earned, adds them to actuals and contracted revenue, and shows where <b>FY27</b> lands.</p></div>
+    <div class="legend"><span>FY27 = Apr 2026 – Mar 2027</span><span>Actuals to end Nov · December in progress</span></div></div>
+  <div class="steps rsteps">
+   <div class="step"><div class="when">1 · Sales</div><h3>Bookings forecast</h3><p>Reps and managers call each deal on Friday: Commit, Best Case, Pipeline. The value is the booking (TCV).</p></div>
+   <div class="step"><div class="when">2 · Products</div><h3>Revenue type per line</h3><p>Every product has a revenue type: spread evenly, on delivery, per occurrence or as used.</p></div>
+   <div class="step"><div class="when">3 · Revenue schedule</div><h3>Booking → months</h3><p>Open deals get forecast rows from their close date and term; won deals get contracted rows.</p></div>
+   <div class="step"><div class="when">4 · Exec view</div><h3>Actual + contracted + forecast</h3><p>One FY27 number against target, by month, revenue type and pillar.</p></div>
+  </div>
+  <div class="chips" style="margin-top:14px"><button class="chip ${S.rscen==='call'?'on':''}" data-rscen="call">Manager call (Commit)</button><button class="chip ${S.rscen==='bc'?'on':''}" data-rscen="bc">Call + Best Case</button>
+    <span class="muted" style="font-size:12.5px;align-self:center">Uses the manager categories from the Friday forecast, so a change on the Pillar &amp; team page flows through here.</span></div>
+  <div class="grid kpis">
+    ${kpi('FY27 earned to date',money(m.A),'Apr–Nov actuals')}
+    ${kpi('Contracted, Dec–Mar',money(m.C),'won deals already scheduled')}
+    ${kpi('Bookings in the forecast',money(m.book),scen+', this quarter')}
+    ${kpi('…of which revenue in FY27',money(m.fyCall+m.fyBc),pct((m.fyCall+m.fyBc)/Math.max(1,m.book))+' of those bookings',true)}
+    ${kpi('…and in FY28 onwards',money(m.later),'recurring tail, beyond 31 Mar')}
+    ${kpi('FY27 landing',money(m.landing),'actual + contracted + forecast')}
+    ${kpi('FY27 target',money(FY_TARGET),'placeholder until targets load')}
+    ${kpi('Landing vs target',pct(pctT),(m.landing-FY_TARGET>=0?'+':'−')+money(Math.abs(m.landing-FY_TARGET)).replace('−',''))}
+  </div>
+  <div class="card" style="margin-top:14px"><h2>FY27 revenue by month</h2><div class="sub">Actuals, then contracted revenue, then what this quarter's forecast adds once each deal's revenue type is applied.</div>${revChart(m)}
+    <div class="legend"><span><i style="background:#1d1d1b"></i>Actual</span><span><i style="background:#00808a"></i>Contracted</span><span><i style="background:#a6ff33"></i>Forecast: Commit</span>${S.rscen==='bc'?'<span><i style="background:#9ff3f3"></i>Forecast: Best Case</span>':''}</div></div>
+  <div class="card" style="margin-top:14px"><h2>Why bookings and revenue differ: revenue type</h2><div class="sub">Same forecast, split by how each product earns its revenue. One-off work lands in FY27 almost in full; multi-year recurring work mostly lands in later years.</div>
+    <div class="scroll"><table><thead><tr><th>Revenue type</th><th>How it's scheduled</th><th class="r">Deals</th><th class="r">Bookings</th><th class="r">FY27 revenue</th><th class="r">FY28+</th><th class="r">Lands in FY27</th></tr></thead><tbody>${typeRows}</tbody></table></div></div>
+  <div class="grid two" style="margin-top:14px">
+    <div class="card"><h2>By pillar</h2><div class="sub">${scen}. Bookings versus the revenue they create this year.</div>
+      <div class="scroll"><table><thead><tr><th>Pillar</th><th class="r">Bookings</th><th class="r">FY27 revenue</th><th class="r">FY28+</th><th class="r">Lands in FY27</th></tr></thead><tbody>${pRows}</tbody></table></div></div>
+    <div class="card dark"><h2>Worked example</h2><ul class="tight" style="font-size:13.5px;color:#cfd1d5">
+      <li><b style="color:#fff">3-year MDR, £96k booking</b>, closing mid-December: spread evenly at £2.7k a month from January → <b style="color:#a6ff33">£8k in FY27</b>, £88k in FY28 onwards.</li>
+      <li><b style="color:#fff">£18k pen test</b>, closing the same week: on delivery in January → <b style="color:#a6ff33">£18k in FY27</b>.</li>
+      <li>Both are £-for-£ the same in a bookings forecast. Only one moves this year's revenue.</li></ul>
+      <p style="font-size:13px;color:#b9bcc2;margin:12px 0 0">Rule used here: revenue starts the month after close. In Salesforce the contract start date on the deal overrides it.</p></div>
+  </div>
+  <div class="card" style="margin-top:14px"><h2>Biggest bookings in the forecast</h2><div class="sub">What each one is worth this year versus later.</div>
+    <div class="scroll"><table><thead><tr><th>Deal</th><th>Manager cat.</th><th>Close</th><th>Revenue type</th><th class="r">Term</th><th class="r">Booking</th><th class="r">FY27 revenue</th><th class="r">FY28+</th></tr></thead><tbody>${top||'<tr><td colspan="8" class="muted">None</td></tr>'}</tbody></table></div></div>`;
 }
 
 function viewRhythm(){
@@ -554,17 +660,17 @@ function viewRhythm(){
   return`
   <div class="hero"><div><h1>The Friday rhythm</h1><p>One working week, one meeting, one snapshot. Reps keep working in Opportunity as normal. The forecast reads it live and freezes it after the meeting.</p></div></div>
   <div class="steps">
-   <div class="step"><div class="when">Sat (auto)</div><h3>Week opens</h3><p>W07 is created and lines are cloned from W06. Manager categories and notes carry forward, so managers only re-judge what changed.</p></div>
+   <div class="step"><div class="when">Sat (auto)</div><h3>Week opens</h3><p>W12 is created and lines are cloned from W11. Manager categories and notes carry forward, so managers only re-judge what changed.</p></div>
    <div class="step"><div class="when">Mon – Wed</div><h3>Reps update deals</h3><p>Stage, close date, amount and next step on the Opportunity. The cockpit syncs on load and also runs nightly. No Opportunity trigger is added.</p></div>
    <div class="step"><div class="when">Thu by 17:00</div><h3>Managers submit</h3><p>Set the manager category, add notes, a signed adjustment with a reason, and risks and upside. Then click Submit.</p></div>
    <div class="step ${S.locked?'':'now'}"><div class="when">Fri 10:00</div><h3>Forecast meeting</h3><p>The CCO runs it from the roll-up, then drills into each pillar and walks the variance bridge. Calls changed in the meeting are made live.</p></div>
    <div class="step ${S.locked?'now':''}"><div class="when">Fri after meeting</div><h3>Lock &amp; snapshot</h3><p>A final sync, then movement and variance against the prior line. Lines, submissions and targets are frozen. Auto-lock runs at 18:00 if this is missed.</p></div>
   </div>
   <div class="grid half" style="margin-top:14px">
-   <div class="card"><h2>This week</h2><div class="sub">${Q.label} · W06 · w/e Fri 11 Dec 2026</div>
+   <div class="card"><h2>This week</h2><div class="sub">${Q.label} · W11 · w/e Fri 11 Dec 2026</div>
     <table><tbody>${UNITS.map(u=>`<tr><td>${u.name}</td><td>${u.mgr}</td><td>${statusBadge(u)}</td></tr>`).join('')}
     <tr><td>Lines in scope</td><td colspan="2" class="num">${t.lines}</td></tr><tr><td>Manager call</td><td colspan="2" class="num"><b>${money(t.call)}</b> (${mLabel()})</td></tr></tbody></table>
-    <div class="lockbar" style="margin-top:14px">${live()?(S.locked?`<span class="badge locked">Locked ${S.lockedAt}</span><span class="muted">W07 is open with carry-forward.</span>`:`<button class="btn dark" data-lock="1">Lock &amp; snapshot W06</button><span class="muted" style="font-size:12.5px">CCO / RevOps only (DXR_Forecast_Admin)</span>`):'<span class="muted">Switch to W06.</span>'}</div></div>
+    <div class="lockbar" style="margin-top:14px">${live()?(S.locked?`<span class="badge locked">Locked ${S.lockedAt}</span><span class="muted">W12 is open with carry-forward.</span>`:`<button class="btn dark" data-lock="1">Lock &amp; snapshot W11</button><span class="muted" style="font-size:12.5px">CCO / RevOps only (DXR_Forecast_Admin)</span>`):'<span class="muted">Switch to W11.</span>'}</div></div>
    <div class="card dark"><h2>What a snapshot stores</h2><ul class="tight" style="color:#cfd1d5;font-size:13.5px">
     <li><b style="color:#fff">1 Forecast_Week__c</b>: status Locked, who and when, Manual or Auto</li>
     <li><b style="color:#fff">4 Forecast_Submission__c</b>: target, closed, commit, best case, pipeline, adjustment, call, prior call, commentary</li>
@@ -601,9 +707,15 @@ function viewBuild(){
      <li><code>Reporting_Revenue_In_Year__c</code> = the quote value, else <b>Amount × 12 ÷ term</b> (shown as <b>Est.</b>).</li>
      <li>Example: 3-yr MDR at £30k/yr + £6k onboarding gives Bookings <b>£96k</b>, Revenue in Year <b>£36k</b> and an estimate of £32k.</li>
      <li>Why it matters: 183 of 827 open DXR deals are multi-year. They hold £27.4m of the £33.1m open bookings.</li></ul></div>
+    <div class="card"><h2>Bookings → revenue: the revenue schedule</h2><div class="sub">Already built in the sandbox (XYP-REV-001/002). The forecast reads it rather than recalculating.</div>
+     <ul class="tight" style="font-size:13.5px"><li><code>Product2.Revenue_Method__c</code>: Spread evenly · On delivery · Per occurrence · As used (plus Point in time and With service).</li>
+     <li><code>Revenue_Schedule__c</code>: one row per line per month. Won deals are <b>Contracted</b>; open deals get <b>Forecast</b> rows from close date (or contract start) and term.</li>
+     <li>Forecast rows read the live deal's category, so the Friday call drives the revenue forecast with no extra entry.</li>
+     <li>Financial year April–March, with This FY / Last FY / Next FY filters.</li>
+     <li>Proposed: the lock also stores each line's FY revenue and later-years revenue, so the revenue forecast has a weekly history too.</li></ul></div>
     <div class="card"><h2>Decisions</h2><ol class="tight" style="font-size:13.5px">
      <li>✅ Pillar = <b>deal owner</b></li>
-     <li>✅ Primary measure = <b>Revenue</b> (in year). <b>Still to confirm:</b> are the revenue targets in-year or bookings?</li>
+     <li>✅ Sales forecast <b>bookings</b>; the exec view converts them to <b>revenue</b> by revenue type. <b>Still to confirm:</b> are FY27 targets set on bookings, revenue, or both?</li>
      <li>✅ Built on the new commercial structure. DXR to supply the go-live date and the roster.</li>
      <li>✅ Renewals stay in the forecast, with a Type filter</li>
      <li>Open: who can lock (CCO only, or + RevOps), and is the 18:00 auto-lock right?</li>
@@ -616,7 +728,7 @@ function viewBuild(){
 function openLock(){
   const t=totals(ALLK),pending=UNITS.filter(u=>u.status!=='Submitted');
   document.getElementById('modalHost').innerHTML=`<div class="scrim" id="scrim"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="lk">
-   <h2 id="lk">Lock W06 and take the snapshot?</h2><p class="muted" style="margin:0 0 12px">This freezes every line and submission for w/e Fri 11 Dec and opens W07 with manager categories and notes carried forward.</p>
+   <h2 id="lk">Lock W11 and take the snapshot?</h2><p class="muted" style="margin:0 0 12px">This freezes every line and submission for w/e Fri 11 Dec and opens W12 with manager categories and notes carried forward.</p>
    ${UNITS.map(u=>`<div class="row"><span>${u.name}</span>${statusBadge(u)}</div>`).join('')}
    <div class="row"><span>Lines to snapshot</span><b class="num">${t.lines}</b></div>
    <div class="row"><span>Manager call (${mLabel()})</span><b class="num">${money(t.call)}</b></div>
@@ -624,7 +736,7 @@ function openLock(){
    <div class="acts"><button class="btn ghost" id="cancelLock">Cancel</button><button class="btn dark" id="confirmLock">Lock &amp; snapshot</button></div></div></div>`;
   document.getElementById('cancelLock').onclick=closeModal;
   document.getElementById('scrim').onclick=e=>{if(e.target.id==='scrim')closeModal()};
-  document.getElementById('confirmLock').onclick=()=>{S.locked=true;S.lockedAt='Fri 11 Dec 11:47';closeModal();render();toast(`Snapshot saved: <b>${t.lines} lines</b> · 4 submissions · W07 opened`)};
+  document.getElementById('confirmLock').onclick=()=>{S.locked=true;S.lockedAt='Fri 11 Dec 11:47';closeModal();render();toast(`Snapshot saved: <b>${t.lines} lines</b> · 4 submissions · W12 opened`)};
 }
 function closeModal(){document.getElementById('modalHost').innerHTML=''}
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});
@@ -634,11 +746,12 @@ let tt;function toast(h){const el=document.getElementById('toast');el.innerHTML=
 function render(){
   renderHeader();
   const app=document.getElementById('app');
-  app.innerHTML=({cockpit:viewCockpit,unit:viewUnit,variance:viewVariance,trend:viewTrend,rhythm:viewRhythm,build:viewBuild})[S.view]();
+  app.innerHTML=({cockpit:viewCockpit,revenue:viewRevenue,unit:viewUnit,variance:viewVariance,trend:viewTrend,rhythm:viewRhythm,build:viewBuild})[S.view]();
 }
 const app=document.getElementById('app');
 app.addEventListener('click',e=>{
-  const el=e.target.closest('[data-unit],[data-filter],[data-scope],[data-mf],[data-tscope],[data-go],[data-lock],#submitBtn');if(!el)return;
+  const el=e.target.closest('[data-rscen],[data-unit],[data-filter],[data-scope],[data-mf],[data-tscope],[data-go],[data-lock],#submitBtn');if(!el)return;
+  if(el.dataset.rscen){S.rscen=el.dataset.rscen;render();return}
   if(el.dataset.unit){S.unit=el.dataset.unit;S.view='unit';S.filter='quarter';render();if(e.target.closest('tr'))window.scrollTo({top:0});return}
   if(el.dataset.filter){S.filter=el.dataset.filter;render();return}
   if(el.dataset.scope){S.scope=el.dataset.scope;S.moveFilter=null;render();return}
